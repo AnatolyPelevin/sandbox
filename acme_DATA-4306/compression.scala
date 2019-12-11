@@ -2,6 +2,7 @@ import org.apache.hadoop.fs._
 import scala.io.Source
 import java.io.{FileNotFoundException, IOException}
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 spark.conf.set("spark.sql.avro.compression.codec","snappy")
@@ -29,15 +30,14 @@ val fs = FileSystem.get( sc.hadoopConfiguration )
 val list = fs.listStatus(source).toList.map(_.getPath.toString).map(item => pattern findFirstIn item).filter(_.nonEmpty).map(_.get)
 
 val partitionList = list.map(LocalDate.parse(_, fullDatePattern)).filter(_.isAfter(start)).filter(_.isBefore(end))
-println(partitionList)
 
 if (partitionList.length == 0) {
-        println("Have not dates to process")
+        println(s"${LocalDateTime.now.toString} | Have not dates to process")
 }
 
 for (i <- partitionList) {
 
-    println(s"Do partition: $i")
+    println(s"${LocalDateTime.now.toString} | Do partition: $i")
     try {
         if (!fs.exists(new Path(s"$destinationStr/tmp/dt=$i"))) {
             if (dataType == "textfile") {
@@ -49,31 +49,30 @@ for (i <- partitionList) {
             throw new Exception("Temporary folder have file with the same name")
         }
 
-        println(s"Compressed partition $i was successfully write to tmp directory")
+        println(s"${LocalDateTime.now.toString} | Compressed partition $i was successfully write to tmp directory")
 
         val destinationWithDir = new Path(s"$destinationStr/dt=$i")
 
         if (fs.exists(destinationWithDir)) {
             if (fs.delete(destinationWithDir,true)) {
-                println(s"Uncompressed partition $i was successfully deleted")
+                println(s"${LocalDateTime.now.toString} | Uncompressed partition $i was successfully deleted")
             } else {
                 throw new Exception(s"Didn`t delete partition $i")
             }
         }
         if (fs.rename(new Path(s"$tmpStr/dt=$i"),new Path(s"$destinationStr/dt=$i"))) {
-            println(s"Compressed partition $i was successfully moved to the destination folder")
+            printlns"${LocalDateTime.now.toString} | Compressed partition $i was successfully moved to the destination folder")
         } else {
             throw new Exception(s"Didn`t move compressed partition $i to the destination folder")
         }
 
-        println(s"Partition $i was processed")
+        println(s"${LocalDateTime.now.toString} | Partition $i was processed")
     } catch {
-        case e: FileNotFoundException => println("FileNotFoundException was catched")
-        case e: IOException => println("IOException was catched")
-        case _: Throwable => println("Got unsuported exception") 
+        case e: FileNotFoundException => println(s"${LocalDateTime.now.toString} | FileNotFoundException was catched")
+        case e: IOException => println(s"${LocalDateTime.now.toString} | IOException was catched")
     }
 }
 
-println("Finished")
+println(s"${LocalDateTime.now.toString} | Finished")
 
 System.exit(0)
