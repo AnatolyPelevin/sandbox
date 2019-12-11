@@ -5,13 +5,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-spark.conf.set("spark.sql.avro.compression.codec","snappy")
-spark.conf.set("spark.sql.parquet.compression.codec","snappy")
-spark.conf.set("spark.executor.extraJavaOptions","-XX:MaxDirectMemorySize=1024M")
-spark.conf.set("spark.executor.memoryOverhead","1536")
-spark.conf.set("spark.executor.memory","1G")
-spark.conf.set("spark.dynamicAllocation.maxExecutors","10")
-
 val fullDatePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 val pattern = "(\\d{4}-\\d{2}-\\d{2})".r
 

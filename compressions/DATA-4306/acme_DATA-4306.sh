@@ -4,10 +4,10 @@ set -ex
 
 START_TIME="$(date +"%F %T")"
 
-SOURCE_DIR='/user/youval.dar/sonus_with_account_info'
-TARGET_DIR='/user/youval.dar/sonus_with_account_info'
+SOURCE_DIR='/user/youval.dar/acme_with_account_info'
+TARGET_DIR='/user/youval.dar/acme_with_account_info'
 
-TMP_DIR='/tmp/compression_tmp_sonus_4306'
+TMP_DIR='/tmp/compression_tmp_acme_4306'
 
 DATE_START=${1:-'2015-12-31'}
 DATE_END=${2:-'2019-12-03'}
@@ -29,7 +29,7 @@ echo "Size of dir before compression ===========================================
 
 hadoop fs -du -h $SOURCE_DIR &>> $LOG_FILE_NAME
 
-hadoop fs -du -s -h $SOURCE_DIR &>> $LOG_FILE_NAME
+hadoop fs -du -s -h $SOURCE_DIR &>> $LOG_FILE_NAME 
 
 hadoop fs -rm -r -f $TMP_DIR &>> $LOG_FILE_NAME
 
@@ -37,7 +37,7 @@ hadoop fs -mkdir $TMP_DIR &>> $LOG_FILE_NAME
 
 echo "$TMP_DIR is created" &>> $LOG_FILE_NAME
 
-time spark-shell -i compression.scala --conf spark.driver.args="$SOURCE_DIR,$TARGET_DIR,$TMP_DIR,$DATE_START,$DATE_END,$DATA_TYPE" --conf spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=2048M  --conf spark.executor.memoryOverhead=1536  --conf spark.executor.memory=2G  --conf spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=2048M  --conf spark.driver.memoryOverhead=1536  --conf spark.driver.memory=2G  --conf spark.dynamicAllocation.maxExecutors=10  --conf spark.dynamicAllocation.enabled=true  --conf spark.dynamicAllocation.initialExecutors=10  --conf spark.dynamicAllocation.minExecutors=1 &>> $LOG_FILE_NAME
+time spark-shell -i compression_DATA-4306.scala --conf spark.driver.args="$SOURCE_DIR,$TARGET_DIR,$TMP_DIR,$DATE_START,$DATE_END,$DATA_TYPE" --conf spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=2048M  --conf spark.executor.memoryOverhead=1536  --conf spark.executor.memory=2G  --conf spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=2048M  --conf spark.driver.memoryOverhead=1536  --conf spark.driver.memory=2G  --conf spark.dynamicAllocation.maxExecutors=10  --conf spark.dynamicAllocation.enabled=true  --conf spark.dynamicAllocation.initialExecutors=10  --conf spark.dynamicAllocation.minExecutors=1 &>> $LOG_FILE_NAME
 
 hadoop fs -rm -r $TMP_DIR &>> $LOG_FILE_NAME
 

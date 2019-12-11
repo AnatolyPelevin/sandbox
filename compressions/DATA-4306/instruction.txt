@@ -1,0 +1,18 @@
+What to do
+
+1. Copy scripts to prod host: compression_DATA-4306.scala, acme_DATA-4306.sh, sonus_DATA-4306.sh
+2. Get hive.keytab from running HiveServer2 instance and get a Kerberos token by command: $ kinit -kt hive.keytab hive/hiveserver.ringcentral.com@RINGCENTRAL.COM
+3. Run script from the hive user (for both scripts): $ ./acme_DATA-4306.sh
+4. Do impala invalidate with table "youval_db.acme_with_account_info" and "youval_db.sonus_with_account_info"
+
+Common questions
+
+1. Time. It takes a lot of time to compress one month. I suppose to process folders by parts, like: $ ./run.sh 2019-07-17 2019-08-18
+2. Side effects. Script will create temporary dir called '/tmp/compression_tmp_*_4306' and remove it after execution.
+3. Logs. Script write logs to %TIMESTAMP_OF_START%.log
+
+Script details
+
+1. Borders is strict. For example, if start_date = 2019-11-09 and end_date=2019-11-13 then only 2019-11-10,  2019-11-11,  2019-11-12 will be processed
+The main purpose of given start_date and end_date as parameters is to share work in time: process groups of directories in different time.
+2. Dirs. You can change TARGET_DIR on run.sh for test purposes: this directs compressed data to another dir and doesn`t affect source files.
