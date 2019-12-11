@@ -14,7 +14,7 @@ DATE_END=${2:-'2019-12-03'}
 
 DATA_TYPE='textfile'
 
-LOG_FILE_NAME="$(date +"%F-%T").log"
+LOG_FILE_NAME="$(date +"%F-%T").acme.log"
 
 touch $LOG_FILE_NAME
 
