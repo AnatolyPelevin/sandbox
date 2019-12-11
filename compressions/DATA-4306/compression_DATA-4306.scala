@@ -40,7 +40,10 @@ for (i <- partitionList) {
             dataType match {
                 case "textfile" => spark.read.text(s"$sourceStr/dt=$i").coalesce(splitFactor).write.option("compression","snappy").text(s"$tmpStr/dt=$i")
                 case "parquet" | "avro" => spark.read.format(dataType).load(s"$sourceStr/dt=$i").write.format(dataType).save(s"$tmpStr/dt=$i")
-                case _ => println(s"${LocalDateTime.now.toString} | Unsupported data type")
+                case _ => {
+                    println(s"${LocalDateTime.now.toString} | Unsupported data type")
+                    System.exit(0)
+                }
             }
         } else {
             throw new Exception("Temporary folder have file with the same name")
