@@ -1,0 +1,11 @@
+1. Copy script to prod host
+
+2. Create tmp dirs: hadoop fs -mkdir -r /user/%username%/sts/tmp
+
+3. run this:
+spark-shell -i migration.scala --conf spark.driver.args="/user/youval.dar/sts_acme/data,/user/youval.dar/sts_acme/data,/user/%username%/sts/tmp,%START_DATE%,%END_DATE%"
+
+%START_DATE% and %END_DATES% should looks like, ex: 2019-11-11
+Dates, between this two dates will be processed.
+
+4. do impala invalidate
