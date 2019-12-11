@@ -5,6 +5,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+spark.conf.set("spark.sql.avro.compression.codec","snappy")
+spark.conf.set("spark.sql.parquet.compression.codec","snappy")
+
 val fullDatePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 val pattern = "(\\d{4}-\\d{2}-\\d{2})".r
 
@@ -15,6 +18,7 @@ val tmpStr = args(2)
 val start = LocalDate.parse(args(3), fullDatePattern)
 val end = LocalDate.parse(args(4), fullDatePattern)
 val dataType = args(5)
+val splitFactor = args(6).toInt
 
 val source = new Path(sourceStr)
 
@@ -33,10 +37,10 @@ for (i <- partitionList) {
     println(s"${LocalDateTime.now.toString} | Do partition: $i")
     try {
         if (!fs.exists(new Path(s"$destinationStr/tmp/dt=$i"))) {
-            if (dataType == "textfile") {
-                spark.read.text(s"$sourceStr/dt=$i").coalesce(30).write.option("compression","snappy").text(s"$tmpStr/dt=$i")
-            } else {
-                spark.read.format(dataType).load(s"$sourceStr/dt=$i").write.format(dataType).save(s"$tmpStr/dt=$i")
+            dataType match {
+                case "textfile" => spark.read.text(s"$sourceStr/dt=$i").coalesce(splitFactor).write.option("compression","snappy").text(s"$tmpStr/dt=$i")
+                case "parquet" | "avro" => spark.read.format(dataType).load(s"$sourceStr/dt=$i").write.format(dataType).save(s"$tmpStr/dt=$i")
+                case _ => println(s"${LocalDateTime.now.toString} | Unsupported data type")
             }
         } else {
             throw new Exception("Temporary folder have file with the same name")
