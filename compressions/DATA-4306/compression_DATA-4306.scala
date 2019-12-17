@@ -1,7 +1,6 @@
 import org.apache.hadoop.fs._
 import scala.io.Source
 import java.io.{FileNotFoundException, IOException}
-import java.nio.file.Path
 import java.time.{LocalDate, LocalDateTime}
 import java.time.format.DateTimeFormatter
 
