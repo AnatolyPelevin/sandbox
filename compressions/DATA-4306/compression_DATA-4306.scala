@@ -61,7 +61,7 @@ for (i <- partitionList) {
             }
         }
         if (fs.rename(new Path(s"$tmpStr/dt=$i"),new Path(s"$destinationStr/dt=$i"))) {
-            printlns"${LocalDateTime.now.toString} | Compressed partition $i was successfully moved to the destination folder")
+            println(s"${LocalDateTime.now.toString} | Compressed partition $i was successfully moved to the destination folder")
         } else {
             throw new Exception(s"Didn`t move compressed partition $i to the destination folder")
         }
