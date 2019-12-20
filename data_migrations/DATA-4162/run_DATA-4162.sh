@@ -7,8 +7,8 @@ START_TIME="$(date +"%F %T")"
 SOURCE_DB='clp_production'
 TARGET_DB='hdg_production'
 
-DATE_START=${1:-'2015-12-31'}
-DATE_END=${2:-'2019-12-03'}
+DATE_START=${1:-'2011-01-01'}
+DATE_END=${2:-'2019-12-20'}
 
 ABENTRYLOG_TABLE='abentrylog'
 CLOG_TABLE='clog'
