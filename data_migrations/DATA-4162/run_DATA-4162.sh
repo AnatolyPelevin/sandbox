@@ -5,10 +5,10 @@ set -ex
 START_TIME="$(date +"%F %T")"
 
 SOURCE_DB='clp_production'
-TARGET_DB='hdg_production'
+TARGET_DB='aleksandr_galanichev_db'
 
-DATE_START=${1:-'2011-01-01'}
-DATE_END=${2:-'2019-12-20'}
+DATE_START=${1:-'2003-08-01'}
+DATE_END=${2:-'2019-12-01'}
 
 ABENTRYLOG_TABLE='abentrylog'
 CLOG_TABLE='clog'
@@ -78,11 +78,11 @@ time spark-shell -i data_migration_DATA-4306.scala --conf spark.driver.args="$SO
 echo "Migration of $SESSIONLOG_TABLE is done" &>> $LOG_FILE_NAME
 
 
-echo "Start migration of $SIPAGENT_TABLE" &>> $LOG_FILE_NAME
+echo "Start migration of $SIPAGENTLOG_TABLE" &>> $LOG_FILE_NAME
 
 time spark-shell -i data_migration_DATA-4306.scala --conf spark.driver.args="$SOURCE_DB,$TARGET_DB,$DATE_START,$DATE_END,$SIPAGENT_TABLE" --conf spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=2048M  --conf spark.executor.memoryOverhead=1536  --conf spark.executor.memory=2G  --conf spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=2048M  --conf spark.driver.memoryOverhead=1536  --conf spark.driver.memory=2G  --conf spark.dynamicAllocation.maxExecutors=10  --conf spark.dynamicAllocation.enabled=true  --conf spark.dynamicAllocation.initialExecutors=10  --conf spark.dynamicAllocation.minExecutors=1 &>> $LOG_FILE_NAME
 
-echo "Migration of $SIPAGENT_TABLE is done" &>> $LOG_FILE_NAME
+echo "Migration of $SIPAGENTLOG_TABLE is done" &>> $LOG_FILE_NAME
 
 END_TIME="$(date +"%F %T")"
 
