@@ -17,8 +17,6 @@ val endDate = LocalDate.parse(args(3))
 val tableName = args(4)
 val hdfsFolder = s"envs/production/HDG/out-data"
 
-
-
 def processAbentrylog(dateslist: List[LocalDate], source: String, destination: String): Unit = {
 
   val tableFolder = s"$hdfsFolder/abentrylog"
@@ -99,7 +97,6 @@ def processMobilelog(dateslist: List[LocalDate], source: String, destination: St
 def processClog(dateslist: List[LocalDate], source: String, destination: String): Unit = {
 
   val tableFolder = s"$hdfsFolder/clog"
-
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
