@@ -17,7 +17,7 @@ for i in "${TABLES[@]}"
 do
 	echo "Start migration of $i" 2>&1 | tee -a $LOG_FILE_NAME
 
-	time spark-shell -i data_migration_DATA-4306.scala --conf spark.driver.args="$SOURCE_DB,$TARGET_DB,$DATE_START,$DATE_END,$i" --conf spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=2048M  --conf spark.executor.memoryOverhead=1536  --conf spark.executor.memory=2G  --conf spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=2048M  --conf spark.driver.memoryOverhead=1536  --conf spark.driver.memory=2G  --conf spark.dynamicAllocation.maxExecutors=10  --conf spark.dynamicAllocation.enabled=true  --conf spark.dynamicAllocation.initialExecutors=10  --conf spark.dynamicAllocation.minExecutors=1 &>> $LOG_FILE_NAME
+	time spark-shell -i data_migration_DATA-4306.scala --conf spark.driver.args="$SOURCE_DB,$TARGET_DB,$DATE_START,$DATE_END,$i" --conf spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=2048M  --conf spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=2048M  --conf spark.dynamicAllocation.enabled=true  --conf spark.dynamicAllocation.maxExecutors=5 &>> $LOG_FILE_NAME
 
 	echo "Migration of $i is done" 2>&1 | tee -a $LOG_FILE_NAME
 done
