@@ -49,7 +49,6 @@ def processAbentrylog(dateslist: List[LocalDate], source: String, destination: S
 				.drop("originalschemas")
 
 			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			println(partitionFolder)
 			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
 			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
@@ -86,7 +85,6 @@ def processMobilelog(dateslist: List[LocalDate], source: String, destination: St
 				.withColumn("dt", lit(dateStr))
 
 			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			println(partitionFolder)
 			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
 			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
@@ -154,7 +152,6 @@ def processClog(dateslist: List[LocalDate], source: String, destination: String)
 				.withColumn("dt", lit(dateStr))
 
 			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			println(partitionFolder)
 			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
 			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
@@ -199,7 +196,6 @@ def processEmaillog(dateslist: List[LocalDate], source: String, destination: Str
 				.withColumn("dt", lit(dateStr))
 
 			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			println(partitionFolder)
 			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
 			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
@@ -239,7 +235,6 @@ def processEventslog(dateslist: List[LocalDate], source: String, destination: St
 				.withColumn("dt", lit(dateStr))
 
 			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			println(partitionFolder)
 			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
 		}
@@ -282,7 +277,6 @@ def processPackagesstatus(dateslist: List[LocalDate], source: String, destinatio
 				.withColumn("dt", lit(dateStr))
 
 			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			println(partitionFolder)
 			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
 			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
@@ -323,7 +317,6 @@ def processSessionlog(dateslist: List[LocalDate], source: String, destination: S
 				.withColumn("dt", lit(dateStr))
 
 			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			println(partitionFolder)
 			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
 			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
@@ -365,7 +358,6 @@ def processSipagent(dateslist: List[LocalDate], source: String, destination: Str
 				.withColumn("dt", lit(dateStr))
 
 			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			println(partitionFolder)
 			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
 			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
