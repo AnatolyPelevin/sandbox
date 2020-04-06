@@ -24,7 +24,5 @@ done
 
 END_TIME="$(date +"%F %T")"
 
-END_TIME="$(date +"%F %T")"
-
 echo "Start time: $START_TIME" 2>&1 | tee -a $LOG_FILE_NAME
 echo "End time: $END_TIME" 2>&1 | tee -a $LOG_FILE_NAME
