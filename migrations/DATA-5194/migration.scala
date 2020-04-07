@@ -8,6 +8,8 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.LongType
 import org.apache.spark.sql.types.StructType
 
+spark.conf.set("spark.sql.parquet.compression.codec", "snappy")
+
 val args = spark.sqlContext.getConf("spark.driver.args").split(",")
 val rootSourcePath = new Path(args(0))
 val rootTmpPath = new Path(args(1))
@@ -70,6 +72,7 @@ def writeDFToTmpLocation(df: DataFrame, schema: StructType, rootTmpPath: Path, d
     df.select(schema.fields.map(_.name).map(col): _*)
       .coalesce(20)
       .write
+      .options()
       .mode(SaveMode.Overwrite)
       .parquet(partitionTmpPathStr)
   }
