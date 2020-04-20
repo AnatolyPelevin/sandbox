@@ -72,7 +72,6 @@ def writeDFToTmpLocation(df: DataFrame, schema: StructType, rootTmpPath: Path, d
     df.select(schema.fields.map(_.name).map(col): _*)
       .coalesce(20)
       .write
-      .options()
       .mode(SaveMode.Overwrite)
       .parquet(partitionTmpPathStr)
   }
