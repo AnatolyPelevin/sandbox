@@ -1,0 +1,1 @@
+MSCK REPAIR TABLE ${hive_schema_name}.${hive_table_name};
