@@ -1,5 +1,5 @@
 import scala.util.matching.Regex
-import org.apache.hadoop.fs._
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.functions.col
 import scala.io.Source

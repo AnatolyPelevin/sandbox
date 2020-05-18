@@ -1,13 +1,10 @@
 import scala.util.matching.Regex
-import org.apache.hadoop.fs._
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.types._
-import org.apache.spark.sql._
-import scala.io.Source
 import java.time.{LocalDate, LocalDateTime}
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.types.{DoubleType, LongType, StructType}
+import org.apache.spark.sql.types.{DoubleType, LongType, StructType, StringType, StructField, BooleanType, TimestampType}
 
 spark.conf.set("spark.sql.parquet.compression.codec", "snappy")
 
