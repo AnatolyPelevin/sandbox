@@ -356,7 +356,7 @@ def processSipagent(dateslist: List[LocalDate], source: String, destination: Str
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
-		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/sipagent/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
+		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/sipagentlog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
 
 		val df = sql(s"select * from $source.sipagent where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
