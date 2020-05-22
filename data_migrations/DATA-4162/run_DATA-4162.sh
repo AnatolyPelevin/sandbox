@@ -24,7 +24,7 @@ do
 	                                                   --conf spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=512M  \
 	                                                   --conf spark.driver.memoryOverhead=2536M  \
 	                                                   --conf spark.dynamicAllocation.enabled=true  \
-	                                                   --conf spark.dynamicAllocation.maxExecutors=10 &>> $LOG_FILE_NAME
+	                                                   --conf spark.dynamicAllocation.maxExecutors=10 2>&1 | tee -a  $LOG_FILE_NAME
 
 done
 
