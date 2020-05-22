@@ -215,7 +215,7 @@ def processEmaillog(dateslist: List[LocalDate], source: String, destination: Str
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
-	println("migration of clog is emaillog")
+	println("migration of emaillog is done")
 	spark.sql(s"msck repair table $destinationDB.emaillog")
 }
 
@@ -256,7 +256,7 @@ def processEventslog(dateslist: List[LocalDate], source: String, destination: St
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
-	println("migration of clog is eventslog")
+	println("migration of eventslog is done")
 	spark.sql(s"msck repair table $destinationDB.eventslog")
 }
 
@@ -302,7 +302,7 @@ def processPackagesstatus(dateslist: List[LocalDate], source: String, destinatio
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
-	println("migration of clog is eventslog")
+	println("migration of packagesstatus is done")
 	spark.sql(s"msck repair table $destinationDB.packagesstatus")
 }
 
@@ -345,7 +345,7 @@ def processSessionlog(dateslist: List[LocalDate], source: String, destination: S
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
-	println("migration of clog is sessionlog")
+	println("migration of sessionlog is done")
 	spark.sql(s"msck repair table $destinationDB.sessionlog")
 }
 
@@ -389,7 +389,7 @@ def processSipagent(dateslist: List[LocalDate], source: String, destination: Str
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
-	println("migration of clog is sipagentlog")
+	println("migration of sipagentlog is done")
 	spark.sql(s"msck repair table $destinationDB.sipagentlog")
 }
 
