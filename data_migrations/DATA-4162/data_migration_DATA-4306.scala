@@ -5,6 +5,7 @@ import java.time.{LocalDate, LocalDateTime}
 import org.apache.spark.sql.types.LongType
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.types.DoubleType
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 val warehouseLocation = new File("spark-warehouse").getAbsolutePath
 val spark = SparkSession.builder().appName("CLP to HDG data migration").config("spark.sql.warehouse.dir", warehouseLocation).enableHiveSupport().getOrCreate()
@@ -15,18 +16,22 @@ val destinationDB= args(1)
 val startDate = LocalDate.parse(args(2))
 val endDate = LocalDate.parse(args(3))
 val tableName = args(4)
+val hdfsSourcePath="/envs/production/CLP/out-data/CLP_ETL-coordinator"
 val hdfsFolder = s"envs/production/HDG/out-data"
+val fs = FileSystem.get(spark.sparkContext.hadoopConfiguration)
 
 def processAbentrylog(dateslist: List[LocalDate], source: String, destination: String): Unit = {
 
+	println("start migration abentrylog")
   val tableFolder = s"$hdfsFolder/abentrylog"
 
   for (dt <- dateslist){
     val dateStr = dt.toString
+		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/abentrylog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
 
-    val df = sql(s"select * from $source.abentrylog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
+		val df = sql(s"select * from $source.abentrylog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(!df.isEmpty) {
+		if(content.size > 0 && !df.isEmpty) {
 
 			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
@@ -55,19 +60,22 @@ def processAbentrylog(dateslist: List[LocalDate], source: String, destination: S
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
   }
+	println("migration of abentrylog is done")
 	spark.sql(s"msck repair table $destinationDB.abentrylog")
 }
 
 def processMobilelog(dateslist: List[LocalDate], source: String, destination: String): Unit = {
 
-  val tableFolder = s"$hdfsFolder/mobilelog"
+	println("start migration mobilelog")
+	val tableFolder = s"$hdfsFolder/mobilelog"
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
+		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/mobilelog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
 
 		val df = sql(s"select * from $source.mobilelog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(!df.isEmpty) {
+		if(content.size > 0 && !df.isEmpty) {
 
 			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
@@ -91,19 +99,22 @@ def processMobilelog(dateslist: List[LocalDate], source: String, destination: St
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
+	println("migration of mobilelog is done")
 	spark.sql(s"msck repair table $destinationDB.mobilelog")
 }
 
 def processClog(dateslist: List[LocalDate], source: String, destination: String): Unit = {
 
-  val tableFolder = s"$hdfsFolder/clog"
+	println("start migration clog")
+	val tableFolder = s"$hdfsFolder/clog"
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
+		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/clog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
 
 		val df = sql(s"select * from $source.clog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(!df.isEmpty) {
+		if(content.size > 0 && !df.isEmpty) {
 
 			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
@@ -157,22 +168,25 @@ def processClog(dateslist: List[LocalDate], source: String, destination: String)
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
+	println("migration of clog is done")
 	spark.sql(s"msck repair table $destinationDB.clog")
 
 }
 
 def processEmaillog(dateslist: List[LocalDate], source: String, destination: String): Unit = {
 
+	println("start migration emaillog")
 	val tableFolder = s"$hdfsFolder/emaillog"
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
+		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/emaillog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
 
 		println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
 		val df = sql(s"select * from $source.emaillog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(!df.isEmpty) {
+		if(content.size > 0 && !df.isEmpty) {
 
 			val newDf = df.withColumn("templateid", 'templateid.cast(LongType))
 				.withColumn("srvtypeid", 'srvtypeid.cast(IntegerType))
@@ -201,19 +215,22 @@ def processEmaillog(dateslist: List[LocalDate], source: String, destination: Str
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
+	println("migration of emaillog is done")
 	spark.sql(s"msck repair table $destinationDB.emaillog")
 }
 
 def processEventslog(dateslist: List[LocalDate], source: String, destination: String): Unit = {
 
+	println("start migration eventslog")
 	val tableFolder = s"$hdfsFolder/eventslog"
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
+		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/eventslog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
 
 		val df = sql(s"select * from $source.eventslog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(!df.isEmpty) {
+		if(content.size > 0 && !df.isEmpty) {
 
 			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
@@ -239,19 +256,22 @@ def processEventslog(dateslist: List[LocalDate], source: String, destination: St
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
+	println("migration of eventslog is done")
 	spark.sql(s"msck repair table $destinationDB.eventslog")
 }
 
 def processPackagesstatus(dateslist: List[LocalDate], source: String, destination: String): Unit = {
 
+	println("start migration packagesstatus")
 	val tableFolder = s"$hdfsFolder/packagesstatus"
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
+		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/packagesstatus/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
 
 		val df = sql(s"select * from $source.packagesstatus where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(!df.isEmpty) {
+		if(content.size > 0 && !df.isEmpty) {
 
 			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
@@ -282,19 +302,22 @@ def processPackagesstatus(dateslist: List[LocalDate], source: String, destinatio
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
+	println("migration of packagesstatus is done")
 	spark.sql(s"msck repair table $destinationDB.packagesstatus")
 }
 
 def processSessionlog(dateslist: List[LocalDate], source: String, destination: String): Unit = {
 
+	println("start migration sessionlog")
 	val tableFolder = s"$hdfsFolder/sessionlog"
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
+		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/sessionlog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
 
 		val df = sql(s"select * from $source.sessionlog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(!df.isEmpty) {
+		if(content.size > 0 && !df.isEmpty) {
 
 			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
@@ -322,19 +345,22 @@ def processSessionlog(dateslist: List[LocalDate], source: String, destination: S
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
+	println("migration of sessionlog is done")
 	spark.sql(s"msck repair table $destinationDB.sessionlog")
 }
 
 def processSipagent(dateslist: List[LocalDate], source: String, destination: String): Unit = {
 
+	println("start migration sipagentlog")
 	val tableFolder = s"$hdfsFolder/sipagentlog"
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
+		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/sipagentlog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
 
 		val df = sql(s"select * from $source.sipagent where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(!df.isEmpty) {
+		if(content.size > 0 && !df.isEmpty) {
 
 			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
@@ -363,6 +389,7 @@ def processSipagent(dateslist: List[LocalDate], source: String, destination: Str
 			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 		}
 	}
+	println("migration of sipagentlog is done")
 	spark.sql(s"msck repair table $destinationDB.sipagentlog")
 }
 

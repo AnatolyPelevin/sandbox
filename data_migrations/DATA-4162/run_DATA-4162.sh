@@ -15,7 +15,6 @@ TABLES=('abentrylog' 'clog' 'emaillog' 'eventslog' 'mobilelog' 'packagesstatus' 
 
 for i in "${TABLES[@]}"
 do
-	echo "Start migration of $i" 2>&1 | tee -a $LOG_FILE_NAME
 
 	time spark-shell -i data_migration_DATA-4306.scala --conf spark.driver.args="$SOURCE_DB,$TARGET_DB,$DATE_START,$DATE_END,$i"  \
 	                                                   --conf spark.executor.memory=2G  \
@@ -25,9 +24,8 @@ do
 	                                                   --conf spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=512M  \
 	                                                   --conf spark.driver.memoryOverhead=2536M  \
 	                                                   --conf spark.dynamicAllocation.enabled=true  \
-	                                                   --conf spark.dynamicAllocation.maxExecutors=10 &>> $LOG_FILE_NAME
+	                                                   --conf spark.dynamicAllocation.maxExecutors=10 2>&1 | tee -a  $LOG_FILE_NAME
 
-	echo "Migration of $i is done" 2>&1 | tee -a $LOG_FILE_NAME
 done
 
 END_TIME="$(date +"%F %T")"
