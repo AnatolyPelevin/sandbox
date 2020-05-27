@@ -25,39 +25,44 @@ def processAbentrylog(dateslist: List[LocalDate], source: String, destination: S
 	println("start migration abentrylog")
   val tableFolder = s"$hdfsFolder/abentrylog"
 
-  for (dt <- dateslist){
-    val dateStr = dt.toString
-		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/abentrylog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
+  for (dt <- dateslist) {
+		val dateStr = dt.toString
+		val hdfsPath = new Path(s"${hdfsSourcePath}/abentrylog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")
+		if (fs.exists(hdfsPath)) {
+			val content = fs.listStatus(hdfsPath).filter(_.isDirectory).map(_.getPath)
 
-		val df = sql(s"select * from $source.abentrylog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
+			val df = sql(s"select * from $source.abentrylog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(content.size > 0 && !df.isEmpty) {
+			if (content.size > 0 && !df.isEmpty) {
 
-			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
+				println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
-			val newDf = df.withColumn("abentryid", 'abentryid.cast(LongType))
-				.withColumn("fmcounter", 'fmcounter.cast(LongType))
-				.withColumn("mailboxid", 'mailboxid.cast(LongType))
-				.withColumn("entrytype", 'entrytype.cast(IntegerType))
-				.withColumn("objecttype", 'objecttype.cast(IntegerType))
-				.withColumn("actiontype", 'actiontype.cast(IntegerType))
-				.withColumn("agentinstance", 'agentinstance.cast(LongType))
-				.withColumn("operation", lit("I"))
-				.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("dt", lit(dateStr))
-				.drop("year")
-				.drop("month")
-				.drop("day")
-				.drop("originalschemas")
+				val newDf = df.withColumn("abentryid", 'abentryid.cast(LongType))
+					.withColumn("fmcounter", 'fmcounter.cast(LongType))
+					.withColumn("mailboxid", 'mailboxid.cast(LongType))
+					.withColumn("entrytype", 'entrytype.cast(IntegerType))
+					.withColumn("objecttype", 'objecttype.cast(IntegerType))
+					.withColumn("actiontype", 'actiontype.cast(IntegerType))
+					.withColumn("agentinstance", 'agentinstance.cast(LongType))
+					.withColumn("operation", lit("I"))
+					.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("dt", lit(dateStr))
+					.drop("year")
+					.drop("month")
+					.drop("day")
+					.drop("originalschemas")
 
-			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
+				val partitionFolder = s"/$tableFolder/dt=$dateStr"
+				newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
-			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
-		}
-		else {
-			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+				println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
+			}
+			else {
+				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+			}
+		} else {
+			println(s"$hdfsPath does't exists")
 		}
   }
 	println("migration of abentrylog is done")
@@ -71,32 +76,37 @@ def processMobilelog(dateslist: List[LocalDate], source: String, destination: St
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
-		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/mobilelog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
+		val hdfsPath = new Path(s"${hdfsSourcePath}/mobilelog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")
+		if (fs.exists(hdfsPath)) {
+			val content = fs.listStatus(hdfsPath).filter(_.isDirectory).map(_.getPath)
 
-		val df = sql(s"select * from $source.mobilelog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
+			val df = sql(s"select * from $source.mobilelog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(content.size > 0 && !df.isEmpty) {
+			if (content.size > 0 && !df.isEmpty) {
 
-			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
+				println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
-			val newDf = df.withColumn("userid", 'userid.cast(LongType))
-				.withColumn("mailboxid", 'mailboxid.cast(LongType))
-				.drop("originalschemas")
-				.drop("year")
-				.drop("month")
-				.drop("day")
-				.withColumn("operation", lit("I"))
-				.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("dt", lit(dateStr))
+				val newDf = df.withColumn("userid", 'userid.cast(LongType))
+					.withColumn("mailboxid", 'mailboxid.cast(LongType))
+					.drop("originalschemas")
+					.drop("year")
+					.drop("month")
+					.drop("day")
+					.withColumn("operation", lit("I"))
+					.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("dt", lit(dateStr))
 
-			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
+				val partitionFolder = s"/$tableFolder/dt=$dateStr"
+				newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
-			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
-		}
-		else {
-			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+				println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
+			}
+			else {
+				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+			}
+		} else {
+			println(s"$hdfsPath does't exists")
 		}
 	}
 	println("migration of mobilelog is done")
@@ -110,62 +120,67 @@ def processClog(dateslist: List[LocalDate], source: String, destination: String)
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
-		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/clog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
+		val hdfsPath = new Path(s"${hdfsSourcePath}/clog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")
+		if (fs.exists(hdfsPath)) {
+			val content = fs.listStatus(hdfsPath).filter(_.isDirectory).map(_.getPath)
 
-		val df = sql(s"select * from $source.clog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
+			val df = sql(s"select * from $source.clog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(content.size > 0 && !df.isEmpty) {
+			if (content.size > 0 && !df.isEmpty) {
 
-			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
+				println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
-			val newDf = df.withColumn("sessionid", 'sessionid.cast(LongType))
-				.withColumn("userid", 'userid.cast(LongType))
-				.withColumn("mailboxid", 'mailboxid.cast(LongType))
-				.withColumn("instanceid", 'instanceid.cast(LongType))
-				.withColumn("serverid", 'serverid.cast(LongType))
-				.withColumn("lineno", 'lineno.cast(LongType))
-				.withColumn("calltype", 'calltype.cast(IntegerType))
-				.withColumn("limitid", 'limitid.cast(LongType))
-				.withColumn("meteredtime", 'meteredtime.cast(DoubleType))
-				.withColumn("callcost", 'callcost.cast(DoubleType))
-				.withColumn("callrate", 'callrate.cast(DoubleType))
-				.withColumn("callertype", 'callertype.cast(IntegerType))
-				.withColumn("extracost", 'extracost.cast(DoubleType))
-				.withColumn("providerid", 'providerid.cast(LongType))
-				.withColumn("id_location", 'id_location.cast(LongType))
-				.withColumn("messageid", 'messageid.cast(LongType))
-				.withColumn("recordingid", 'recordingid.cast(LongType))
-				.withColumn("actioncode", 'actioncode.cast(IntegerType))
-				.withColumn("callresult", 'callresult.cast(LongType))
-				.withColumn("answerno", 'answerno.cast(LongType))
-				.withColumn("rejectreason", 'rejectreason.cast(IntegerType))
-				.withColumn("agentid", 'agentid.cast(LongType))
-				.withColumn("recipientid", 'recipientid.cast(LongType))
-				.withColumn("retryno", 'retryno.cast(LongType))
-				.withColumn("destinationid", 'destinationid.cast(LongType))
-				.withColumn("hidden", 'hidden.cast(IntegerType))
-				.drop("originalschemas")
-				.withColumn("pricepercall", 'pricepercall.cast(DoubleType))
-				.withColumn("startrate", 'startrate.cast(DoubleType))
-				.withColumn("accesscharge", 'accesscharge.cast(DoubleType))
-				.withColumn("dialingplan", 'dialingplan.cast(IntegerType))
-				.withColumn("representedby", 'representedby.cast(LongType))
-				.withColumn("bizlocationid", 'bizlocationid.cast(LongType))
-				.drop("year")
-				.drop("month")
-				.drop("day")
-				.withColumn("operation", lit("U"))
-				.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("dt", lit(dateStr))
+				val newDf = df.withColumn("sessionid", 'sessionid.cast(LongType))
+					.withColumn("userid", 'userid.cast(LongType))
+					.withColumn("mailboxid", 'mailboxid.cast(LongType))
+					.withColumn("instanceid", 'instanceid.cast(LongType))
+					.withColumn("serverid", 'serverid.cast(LongType))
+					.withColumn("lineno", 'lineno.cast(LongType))
+					.withColumn("calltype", 'calltype.cast(IntegerType))
+					.withColumn("limitid", 'limitid.cast(LongType))
+					.withColumn("meteredtime", 'meteredtime.cast(DoubleType))
+					.withColumn("callcost", 'callcost.cast(DoubleType))
+					.withColumn("callrate", 'callrate.cast(DoubleType))
+					.withColumn("callertype", 'callertype.cast(IntegerType))
+					.withColumn("extracost", 'extracost.cast(DoubleType))
+					.withColumn("providerid", 'providerid.cast(LongType))
+					.withColumn("id_location", 'id_location.cast(LongType))
+					.withColumn("messageid", 'messageid.cast(LongType))
+					.withColumn("recordingid", 'recordingid.cast(LongType))
+					.withColumn("actioncode", 'actioncode.cast(IntegerType))
+					.withColumn("callresult", 'callresult.cast(LongType))
+					.withColumn("answerno", 'answerno.cast(LongType))
+					.withColumn("rejectreason", 'rejectreason.cast(IntegerType))
+					.withColumn("agentid", 'agentid.cast(LongType))
+					.withColumn("recipientid", 'recipientid.cast(LongType))
+					.withColumn("retryno", 'retryno.cast(LongType))
+					.withColumn("destinationid", 'destinationid.cast(LongType))
+					.withColumn("hidden", 'hidden.cast(IntegerType))
+					.drop("originalschemas")
+					.withColumn("pricepercall", 'pricepercall.cast(DoubleType))
+					.withColumn("startrate", 'startrate.cast(DoubleType))
+					.withColumn("accesscharge", 'accesscharge.cast(DoubleType))
+					.withColumn("dialingplan", 'dialingplan.cast(IntegerType))
+					.withColumn("representedby", 'representedby.cast(LongType))
+					.withColumn("bizlocationid", 'bizlocationid.cast(LongType))
+					.drop("year")
+					.drop("month")
+					.drop("day")
+					.withColumn("operation", lit("U"))
+					.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("dt", lit(dateStr))
 
-			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
+				val partitionFolder = s"/$tableFolder/dt=$dateStr"
+				newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
-			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
-		}
-		else {
-			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+				println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
+			}
+			else {
+				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+			}
+		} else {
+			println(s"$hdfsPath does't exists")
 		}
 	}
 	println("migration of clog is done")
@@ -180,39 +195,44 @@ def processEmaillog(dateslist: List[LocalDate], source: String, destination: Str
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
-		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/emaillog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
+		val hdfsPath = new Path(s"${hdfsSourcePath}/emaillog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")
+		if (fs.exists(hdfsPath)) {
+			val content = fs.listStatus(hdfsPath).filter(_.isDirectory).map(_.getPath)
 
-		println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
+			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
-		val df = sql(s"select * from $source.emaillog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
+			val df = sql(s"select * from $source.emaillog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(content.size > 0 && !df.isEmpty) {
+			if (content.size > 0 && !df.isEmpty) {
 
-			val newDf = df.withColumn("templateid", 'templateid.cast(LongType))
-				.withColumn("srvtypeid", 'srvtypeid.cast(IntegerType))
-				.withColumn("userid", 'userid.cast(LongType))
-				.withColumn("mailboxid", 'mailboxid.cast(LongType))
-				.withColumn("brandid", 'brandid.cast(LongType))
-				.withColumn("servicelevel", 'servicelevel.cast(LongType))
-				.withColumn("planid", 'planid.cast(LongType))
-				.withColumn("privilegeid", 'privilegeid.cast(IntegerType))
-				.withColumn("testerflag", 'testerflag.cast(LongType))
-				.drop("originalschemas")
-				.drop("year")
-				.drop("month")
-				.drop("day")
-				.withColumn("operation", lit("I"))
-				.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("dt", lit(dateStr))
+				val newDf = df.withColumn("templateid", 'templateid.cast(LongType))
+					.withColumn("srvtypeid", 'srvtypeid.cast(IntegerType))
+					.withColumn("userid", 'userid.cast(LongType))
+					.withColumn("mailboxid", 'mailboxid.cast(LongType))
+					.withColumn("brandid", 'brandid.cast(LongType))
+					.withColumn("servicelevel", 'servicelevel.cast(LongType))
+					.withColumn("planid", 'planid.cast(LongType))
+					.withColumn("privilegeid", 'privilegeid.cast(IntegerType))
+					.withColumn("testerflag", 'testerflag.cast(LongType))
+					.drop("originalschemas")
+					.drop("year")
+					.drop("month")
+					.drop("day")
+					.withColumn("operation", lit("I"))
+					.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("dt", lit(dateStr))
 
-			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
+				val partitionFolder = s"/$tableFolder/dt=$dateStr"
+				newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
-			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
-		}
-		else {
-			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+				println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
+			}
+			else {
+				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+			}
+		} else {
+			println(s"$hdfsPath does't exists")
 		}
 	}
 	println("migration of emaillog is done")
@@ -226,34 +246,39 @@ def processEventslog(dateslist: List[LocalDate], source: String, destination: St
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
-		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/eventslog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
+		val hdfsPath = new Path(s"${hdfsSourcePath}/eventslog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")
+		if (fs.exists(hdfsPath)) {
+			val content = fs.listStatus(hdfsPath).filter(_.isDirectory).map(_.getPath)
 
-		val df = sql(s"select * from $source.eventslog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
+			val df = sql(s"select * from $source.eventslog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(content.size > 0 && !df.isEmpty) {
+			if (content.size > 0 && !df.isEmpty) {
 
-			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
+				println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
-			val newDf = df.withColumn("sessionid", 'sessionid.cast(LongType))
-				.withColumn("duration", 'duration.cast(LongType))
-				.withColumn("countcode", 'countcode.cast(LongType))
-				.withColumn("mailboxid", 'mailboxid.cast(LongType))
-				.withColumn("actioncode", 'actioncode.cast(IntegerType))
-				.drop("originalschemas")
-				.drop("year")
-				.drop("month")
-				.drop("day")
-				.withColumn("operation", lit("I"))
-				.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("dt", lit(dateStr))
+				val newDf = df.withColumn("sessionid", 'sessionid.cast(LongType))
+					.withColumn("duration", 'duration.cast(LongType))
+					.withColumn("countcode", 'countcode.cast(LongType))
+					.withColumn("mailboxid", 'mailboxid.cast(LongType))
+					.withColumn("actioncode", 'actioncode.cast(IntegerType))
+					.drop("originalschemas")
+					.drop("year")
+					.drop("month")
+					.drop("day")
+					.withColumn("operation", lit("I"))
+					.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("dt", lit(dateStr))
 
-			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
-			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
-		}
-		else {
-			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+				val partitionFolder = s"/$tableFolder/dt=$dateStr"
+				newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
+				println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
+			}
+			else {
+				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+			}
+		} else {
+			println(s"$hdfsPath does't exists")
 		}
 	}
 	println("migration of eventslog is done")
@@ -267,39 +292,44 @@ def processPackagesstatus(dateslist: List[LocalDate], source: String, destinatio
 
 	for (dt <- dateslist){
 		val dateStr = dt.toString
-		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/packagesstatus/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
+		val hdfsPath = new Path(s"${hdfsSourcePath}/packagesstatus/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")
+		if (fs.exists(hdfsPath)) {
+			val content = fs.listStatus(hdfsPath).filter(_.isDirectory).map(_.getPath)
 
-		val df = sql(s"select * from $source.packagesstatus where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
+			val df = sql(s"select * from $source.packagesstatus where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(content.size > 0 && !df.isEmpty) {
+			if (content.size > 0 && !df.isEmpty) {
 
-			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
+				println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
-			val newDf = df.withColumn("packageid", 'packageid.cast(LongType))
-				.withColumn("userid", 'userid.cast(LongType))
-				.withColumn("externid", 'externid.cast(LongType))
-				.withColumn("blockno", 'blockno.cast(IntegerType))
-				.withColumn("recordtype", 'recordtype.cast(IntegerType))
-				.withColumn("amountchange", 'amountchange.cast(DoubleType))
-				.withColumn("allamount", 'allamount.cast(DoubleType))
-				.withColumn("limitid", 'limitid.cast(LongType))
-				.withColumn("islimit", 'islimit.cast(IntegerType))
-				.drop("originalschemas")
-				.drop("year")
-				.drop("month")
-				.drop("day")
-				.withColumn("operation", lit("I"))
-				.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("dt", lit(dateStr))
+				val newDf = df.withColumn("packageid", 'packageid.cast(LongType))
+					.withColumn("userid", 'userid.cast(LongType))
+					.withColumn("externid", 'externid.cast(LongType))
+					.withColumn("blockno", 'blockno.cast(IntegerType))
+					.withColumn("recordtype", 'recordtype.cast(IntegerType))
+					.withColumn("amountchange", 'amountchange.cast(DoubleType))
+					.withColumn("allamount", 'allamount.cast(DoubleType))
+					.withColumn("limitid", 'limitid.cast(LongType))
+					.withColumn("islimit", 'islimit.cast(IntegerType))
+					.drop("originalschemas")
+					.drop("year")
+					.drop("month")
+					.drop("day")
+					.withColumn("operation", lit("I"))
+					.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("dt", lit(dateStr))
 
-			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
+				val partitionFolder = s"/$tableFolder/dt=$dateStr"
+				newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
-			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
-		}
-		else {
-			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+				println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
+			}
+			else {
+				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+			}
+		} else {
+			println(s"$hdfsPath does't exists")
 		}
 	}
 	println("migration of packagesstatus is done")
@@ -311,38 +341,43 @@ def processSessionlog(dateslist: List[LocalDate], source: String, destination: S
 	println("start migration sessionlog")
 	val tableFolder = s"$hdfsFolder/sessionlog"
 
-	for (dt <- dateslist){
+	for (dt <- dateslist) {
 		val dateStr = dt.toString
-		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/sessionlog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
+		val hdfsPath = new Path(s"${hdfsSourcePath}/sessionlog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")
+		if (fs.exists(hdfsPath)) {
+			val content = fs.listStatus(hdfsPath).filter(_.isDirectory).map(_.getPath)
 
-		val df = sql(s"select * from $source.sessionlog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
+			val df = sql(s"select * from $source.sessionlog where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(content.size > 0 && !df.isEmpty) {
+			if (content.size > 0 && !df.isEmpty) {
 
-			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
+				println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
-			val newDf = df.withColumn("sessionid", 'sessionid.cast(LongType))
-				.withColumn("ipaddress", 'ipaddress.cast(LongType))
-				.withColumn("mailboxid", 'mailboxid.cast(LongType))
-				.withColumn("userid", 'userid.cast(LongType))
-				.withColumn("serverid", 'serverid.cast(LongType))
-				.drop("originalschemas")
-				.withColumn("adminid", 'adminid.cast(LongType))
-				.drop("year")
-				.drop("month")
-				.drop("day")
-				.withColumn("operation", lit("I"))
-				.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("dt", lit(dateStr))
+				val newDf = df.withColumn("sessionid", 'sessionid.cast(LongType))
+					.withColumn("ipaddress", 'ipaddress.cast(LongType))
+					.withColumn("mailboxid", 'mailboxid.cast(LongType))
+					.withColumn("userid", 'userid.cast(LongType))
+					.withColumn("serverid", 'serverid.cast(LongType))
+					.drop("originalschemas")
+					.withColumn("adminid", 'adminid.cast(LongType))
+					.drop("year")
+					.drop("month")
+					.drop("day")
+					.withColumn("operation", lit("I"))
+					.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("dt", lit(dateStr))
 
-			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
+				val partitionFolder = s"/$tableFolder/dt=$dateStr"
+				newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
-			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
-		}
-		else {
-			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+				println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
+			}
+			else {
+				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+			}
+		} else {
+			println(s"$hdfsPath does't exists")
 		}
 	}
 	println("migration of sessionlog is done")
@@ -354,39 +389,44 @@ def processSipagent(dateslist: List[LocalDate], source: String, destination: Str
 	println("start migration sipagentlog")
 	val tableFolder = s"$hdfsFolder/sipagentlog"
 
-	for (dt <- dateslist){
+	for (dt <- dateslist) {
 		val dateStr = dt.toString
-		val content = fs.listStatus(new Path(s"${hdfsSourcePath}/sipagentlog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")).filter(_.isDirectory).map(_.getPath)
+		val hdfsPath = new Path(s"${hdfsSourcePath}/sipagentlog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")
+		if (fs.exists(hdfsPath)) {
+			val content = fs.listStatus(hdfsPath).filter(_.isDirectory).map(_.getPath)
 
-		val df = sql(s"select * from $source.sipagent where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
+			val df = sql(s"select * from $source.sipagent where year='${dt.getYear}' and month='${dt.getMonthValue}' and day='${dt.getDayOfMonth}'")
 
-		if(content.size > 0 && !df.isEmpty) {
+			if (content.size > 0 && !df.isEmpty) {
 
-			println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
+				println(s"${LocalDateTime.now.toString} | Do partition: $dateStr")
 
-			val newDf = df.withColumn("userid", 'userid.cast(LongType))
-				.withColumn("mailboxid", 'mailboxid.cast(LongType))
-				.withColumn("instanceid", 'instanceid.cast(LongType))
-				.withColumn("version", 'version.cast(LongType))
-				.withColumn("edition", 'edition.cast(LongType))
-				.withColumn("skintype", 'skintype.cast(LongType))
-				.withColumn("skinschema", 'skinschema.cast(LongType))
-				.drop("originalschemas")
-				.drop("year")
-				.drop("month")
-				.drop("day")
-				.withColumn("operation", lit("I"))
-				.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
-				.withColumn("dt", lit(dateStr))
+				val newDf = df.withColumn("userid", 'userid.cast(LongType))
+					.withColumn("mailboxid", 'mailboxid.cast(LongType))
+					.withColumn("instanceid", 'instanceid.cast(LongType))
+					.withColumn("version", 'version.cast(LongType))
+					.withColumn("edition", 'edition.cast(LongType))
+					.withColumn("skintype", 'skintype.cast(LongType))
+					.withColumn("skinschema", 'skinschema.cast(LongType))
+					.drop("originalschemas")
+					.drop("year")
+					.drop("month")
+					.drop("day")
+					.withColumn("operation", lit("I"))
+					.withColumn("ts_inserted_to_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("ts_read_from_kafka", lit(dateStr).cast("Timestamp"))
+					.withColumn("dt", lit(dateStr))
 
-			val partitionFolder = s"/$tableFolder/dt=$dateStr"
-			newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
+				val partitionFolder = s"/$tableFolder/dt=$dateStr"
+				newDf.write.mode(SaveMode.Overwrite).parquet(partitionFolder)
 
-			println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
-		}
-		else {
-			println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+				println(s"${LocalDateTime.now.toString} | Partition $dateStr was processed")
+			}
+			else {
+				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
+			}
+		} else {
+			println(s"$hdfsPath does't exists")
 		}
 	}
 	println("migration of sipagentlog is done")
