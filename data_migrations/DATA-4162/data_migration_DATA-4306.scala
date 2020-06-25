@@ -391,7 +391,7 @@ def processSipagent(dateslist: List[LocalDate], source: String, destination: Str
 
 	for (dt <- dateslist) {
 		val dateStr = dt.toString
-		val hdfsPath = new Path(s"${hdfsSourcePath}/sipagentlog/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")
+		val hdfsPath = new Path(s"${hdfsSourcePath}/sipagent/year=${dt.getYear}/month=${dt.getMonthValue}/day=${dt.getDayOfMonth}")
 		if (fs.exists(hdfsPath)) {
 			val content = fs.listStatus(hdfsPath).filter(_.isDirectory).map(_.getPath)
 
