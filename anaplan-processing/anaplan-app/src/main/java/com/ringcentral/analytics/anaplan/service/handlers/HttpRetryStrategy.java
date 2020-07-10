@@ -10,6 +10,7 @@ public class HttpRetryStrategy implements ServiceUnavailableRetryStrategy {
     private static final int MAX_RETRIES = 5;
     private static final int RETRY_INTERVAL = 5000;
     private final int maxRetries;
+
     private final long retryInterval;
 
     public HttpRetryStrategy(int maxRetries, int retryInterval) {
