@@ -30,7 +30,7 @@ var hdfsFolder = ""
 
 env match {
 	case "stage" => {
-		sourseDB = "clp_release"
+		sourseDB = "clp_release_master"
 		destinationDB = "hdg_release"
 		hdfsSourcePath = "hdfs://nameservice1/envs/release/CLP/master/out-data/CLP_ETL-coordinator"
 		hdfsFolder = "hdfs://nameservice1/envs/release/HDG/out-data" 
@@ -89,7 +89,7 @@ def processAbentrylog(dateslist: List[LocalDate], source: String, destination: S
 				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 			}
 		} else {
-			println(s"$hdfsPath does't exists")
+			println(s"$hdfsPath doesn't exists")
 		}
   }
 	spark.sql(s"msck repair table $destinationDB.abentrylog")
@@ -133,7 +133,7 @@ def processMobilelog(dateslist: List[LocalDate], source: String, destination: St
 				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 			}
 		} else {
-			println(s"$hdfsPath does't exists")
+			println(s"$hdfsPath doesn't exists")
 		}
 	}
 	spark.sql(s"msck repair table $destinationDB.mobilelog")
@@ -207,7 +207,7 @@ def processClog(dateslist: List[LocalDate], source: String, destination: String)
 				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 			}
 		} else {
-			println(s"$hdfsPath does't exists")
+			println(s"$hdfsPath doesn't exists")
 		}
 	}
 	spark.sql(s"msck repair table $destinationDB.clog")
@@ -258,7 +258,7 @@ def processEmaillog(dateslist: List[LocalDate], source: String, destination: Str
 				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 			}
 		} else {
-			println(s"$hdfsPath does't exists")
+			println(s"$hdfsPath doesn't exists")
 		}
 	}
 	spark.sql(s"msck repair table $destinationDB.emaillog")
@@ -304,7 +304,7 @@ def processEventslog(dateslist: List[LocalDate], source: String, destination: St
 				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 			}
 		} else {
-			println(s"$hdfsPath does't exists")
+			println(s"$hdfsPath doesn't exists")
 		}
 	}
 	spark.sql(s"msck repair table $destinationDB.eventslog")
@@ -355,7 +355,7 @@ def processPackagesstatus(dateslist: List[LocalDate], source: String, destinatio
 				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 			}
 		} else {
-			println(s"$hdfsPath does't exists")
+			println(s"$hdfsPath doesn't exists")
 		}
 	}
 	spark.sql(s"msck repair table $destinationDB.packagesstatus")
@@ -403,7 +403,7 @@ def processSessionlog(dateslist: List[LocalDate], source: String, destination: S
 				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 			}
 		} else {
-			println(s"$hdfsPath does't exists")
+			println(s"$hdfsPath doesn't exists")
 		}
 	}
 	spark.sql(s"msck repair table $destinationDB.sessionlog")
@@ -452,7 +452,7 @@ def processSipagent(dateslist: List[LocalDate], source: String, destination: Str
 				println(s"${LocalDateTime.now.toString} | partition: $dateStr is empty")
 			}
 		} else {
-			println(s"$hdfsPath does't exists")
+			println(s"$hdfsPath doesn't exists")
 		}
 	}
 	spark.sql(s"msck repair table $destinationDB.sipagentlog")

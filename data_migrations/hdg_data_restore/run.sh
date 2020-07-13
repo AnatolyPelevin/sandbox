@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOG_FILE_NAME="$(date +"%F-%T")_clp_hdg_migration.log"
+LOG_FILE_NAME="$(date +"%F_%H-%M-%S")_clp_hdg_migration.log"
 START_TIME="$(date +"%F %T")"
 
 while getopts e:t:d: flag
