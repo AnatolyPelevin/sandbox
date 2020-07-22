@@ -152,8 +152,6 @@ class TaskManager:
         utils = Utils()
         path_in = 'deployment/src/main/resources/include/json/config'
         for task in tasks:
-            print(json.dumps(task, indent=4))
-
             full_path = "%s/%s/%s/%s/%s.json.j2" % (self.config["path_to_projects"],
                                                     task['CONFIG'],
                                                     path_in,
@@ -162,10 +160,6 @@ class TaskManager:
                                                     )
 
             result = self.defineTask(task, full_path)
-
-            print("\n")
-            print(json.dumps(result, indent=4))
-            print("\n")
 
             if result is not None:
                 utils.writeConfig(full_path, result)

@@ -2,6 +2,7 @@ import json
 import argparse
 import TaskManager
 from utils import Utils, ETCD
+import logging
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -18,12 +19,12 @@ if __name__ == '__main__':
                         default="")
 
     parser.add_argument('--attempts', nargs=1,
-                        help="JSON tasks file",
+                        help="Reconnect attempts",
                         type=argparse.FileType('r'),
                         default=5)
 
     parser.add_argument('--sshhost', nargs=1,
-                        help="JSON tasks file",
+                        help="SSHhost for tunel",
                         type=argparse.FileType('r'),
                         default="sjc01-c01-hdc04.c01.ringcentral.com")
 
@@ -65,6 +66,9 @@ if __name__ == '__main__':
     config["ssh_host"] = arguments.sshhost[0]
     config["project_path"] = arguments.projectpath[0]
     config["path_to_projects"] = arguments.pathtoconfigs[0]
+
+    logging.info(json.dumps(config, indent=4))
+    logging.info(json.dumps(tasks, indent=4))
 
     utils = Utils()
 
