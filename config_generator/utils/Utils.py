@@ -3,8 +3,8 @@ import json
 
 class Utils:
 
-    def readTemplate(self, project_path, etl_name):
-        with open(project_path + '/%s_config_template.json' % (etl_name,)) as json_file:
+    def readTemplate(self, path, etl_name):
+        with open(path + '/%s_config_template.json' % (etl_name,)) as json_file:
             template = json.load(json_file)
         return template
 

@@ -1,6 +1,7 @@
 from simple_salesforce import Salesforce
 from collections import OrderedDict
-import Reader
+from readers.Reader import Reader
+import logging
 
 
 class SalesForceReader(Reader):
@@ -14,7 +15,7 @@ class SalesForceReader(Reader):
                                   domain=config['SFDC_API_URL'].split("//")[1].split(".")[0])
         self.attempts = config['attempts']
 
-    def getSchema(self, object_name, schema_name):
+    def getSchema(self, object_name):
         schema = {}
         attempt = 0
         baseURL = self.session.base_url.split('/services')[
@@ -47,12 +48,17 @@ class SalesForceReader(Reader):
             'datetime': 'timestamp',
             'currency': 'float',
             'reference': 'varchar(72)',
-            'textarea': 'varchar(1020)',
+            'textarea': 'long varchar(65000)',
             'url': 'varchar(1000)',
             'email': 'varchar(400)',
-            'picklist': 'varchar(10)'
+            'picklist': 'varchar(1020)',
+            'id': 'bigint',
+            'phone': 'varchar(160)',
+            'int': 'bigint',
+            'multipicklist': 'varchar(16396)'
         }
         if source_type in type_cast:
             return type_cast[source_type]
         else:
+            logging.error("DataTypeNotFound: Not such datatype: %s for field %s" % (source_type, field_name))
             raise Exception("Not such datatype: %s for field %s" % (source_type, field_name))

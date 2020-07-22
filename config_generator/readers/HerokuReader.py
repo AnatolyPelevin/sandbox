@@ -1,20 +1,21 @@
 from sshtunnel import SSHTunnelForwarder
 import psycopg2
-import Reader
+from readers.Reader import Reader
+import logging
 
 
 class HerokuReader(Reader):
     def __init__(self,
                  config,
                  ssh_tunel=None):
-        self.ssh_tunel = SSHTunnelForwarder((config['ssh_host'], 22),
-                                            ssh_username=config['user'],
-                                            ssh_password=config['password'],
-                                            remote_bind_address=(config['SFDC_HEROKU_POSTGRES_HOST'], 5432)
-                                            )
+        self.ssh_tunnel = SSHTunnelForwarder((config['ssh_host'], 22),
+                                             ssh_username=config['user'],
+                                             ssh_password=config['password'],
+                                             remote_bind_address=(config['SFDC_HEROKU_POSTGRES_HOST'], 5432)
+                                             )
         self.config = config
 
-    def getSchema(self, object_name, schema_name):
+    def getSchema(self, object_name):
         self.ssh_tunnel.start()
         conn = psycopg2.connect(database=self.config['SFDC_HEROKU_POSTGRES_DB_NAME'],
                                 user=self.config['SFDC_HEROKU_POSTGRES_USER'],
@@ -28,13 +29,15 @@ class HerokuReader(Reader):
                            FROM information_schema.columns
                            WHERE table_schema = 'salesforce'
                            AND table_name   = '%s';
-                        """ % (object_name,)
+                        """ % (object_name.lower(),)
+
+        logging.info("Source schema query: %s" % (query,))
 
         cur.execute(query)
         result = cur.fetchall()
 
         conn.close()
-        self.pg_ssh_tunnel.stop()
+        self.ssh_tunnel.stop()
 
         schema = {}
         for item in result:

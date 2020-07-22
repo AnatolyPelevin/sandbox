@@ -1,51 +1,64 @@
 import json
 import argparse
-import TaskManager
-from utils import Utils, ETCD
+from utils.TaskManager import TaskManager
+from utils.Utils import Utils
+from utils.ETCD import ETCD
 import logging
 
 if __name__ == '__main__':
+    print("Application started")
     parser = argparse.ArgumentParser()
     parser.add_argument('-u',
                         '--user',
                         nargs=1,
                         help="User for ssh_tunel",
-                        type=argparse.FileType('r'),
+                        type=str,
                         default="")
 
     parser.add_argument('--password', nargs=1,
                         help="Password for ssh_tunel",
-                        type=argparse.FileType('r'),
+                        type=str,
                         default="")
 
     parser.add_argument('--attempts', nargs=1,
                         help="Reconnect attempts",
-                        type=argparse.FileType('r'),
+                        type=int,
                         default=5)
 
     parser.add_argument('--sshhost', nargs=1,
                         help="SSHhost for tunel",
-                        type=argparse.FileType('r'),
+                        type=str,
                         default="sjc01-c01-hdc04.c01.ringcentral.com")
 
     parser.add_argument('--projectpath', nargs=1,
                         help="JSON tasks file",
-                        type=argparse.FileType('r'),
-                        default=".")
-
-    parser.add_argument('--pathtoconfigs', nargs=1,
-                        help="JSON tasks file",
-                        type=argparse.FileType('r'),
+                        type=str,
                         default=".")
 
     parser.add_argument('--tasks', nargs=1,
+                        help="JSON tasks",
+                        type=str)
+
+    parser.add_argument('--task_file', nargs=1,
                         help="JSON tasks file",
                         type=argparse.FileType('r'))
 
-    arguments = parser.parse_args()
-    tasks = json.loads(arguments.tasks[0])
+    parser.add_argument('--etcd_file', nargs=1,
+                        help="JSON etcd file",
+                        type=argparse.FileType('r'))
 
-    etcd = ETCD('stage')
+    parser.add_argument('--config_path', nargs=1,
+                        help="config path",
+                        type=str)
+
+    arguments = parser.parse_args()
+
+    tasks ={}
+    if arguments.tasks is not None:
+        tasks = json.loads(arguments.tasks)
+    else:
+        tasks = json.load(arguments.task_file[0])
+
     config = {"DWH_ORACLE_ERD_USER_NAME": None,
               "DWH_ORACLE_ERD_PASSWORD": None,
               "DWH_ORACLE_DATA_SOURCE_URL": None,
@@ -57,18 +70,24 @@ if __name__ == '__main__':
               "SFDC_HEROKU_POSTGRES_USER": None,
               "SFDC_HEROKU_POSTGRES_PASSWORD": None,
               }
-    for item in config.keys():
-        config[item] = etcd.get_var(item)
+
+    etcd = ETCD('stage')
+
+    if arguments.etcd_file is not None:
+        etcd_json = json.load(arguments.etcd_file[0])
+        for item in etcd_json.keys():
+            config[item] = etcd_json[item]
+    else:
+        etcd = ETCD('stage')
+        for item in config.keys():
+            config[item] = etcd.get_var(item)
 
     config["user"] = arguments.user[0]
     config["password"] = arguments.password[0]
     config["attempts"] = arguments.attempts[0]
     config["ssh_host"] = arguments.sshhost[0]
-    config["project_path"] = arguments.projectpath[0]
-    config["path_to_projects"] = arguments.pathtoconfigs[0]
-
-    logging.info(json.dumps(config, indent=4))
-    logging.info(json.dumps(tasks, indent=4))
+    config["pwd"] = arguments.projectpath[0]
+    config["config_path"] = arguments.config_path[0]
 
     utils = Utils()
 

@@ -1,0 +1,12 @@
+{
+    "DWH_ORACLE_ERD_USER_NAME": "HADOOP_ERD",
+    "DWH_ORACLE_ERD_PASSWORD": "",
+    "DWH_ORACLE_DATA_SOURCE_URL": "jdbc:oracle:thin:@10.13.28.213:1521:UPDWH",
+    "SFDC_API_USER_NAME": "hadoopsuperuser@ringcentral.com",
+    "SFDC_API_PASSWORD": "",
+    "SFDC_API_URL": "https://login.salesforce.com",
+    "SFDC_HEROKU_POSTGRES_HOST": "ec2-54-69-248-2.us-west-2.compute.amazonaws.com",
+    "SFDC_HEROKU_POSTGRES_DB_NAME": "d6b1ued7n4vgk7",
+    "SFDC_HEROKU_POSTGRES_USER": "ufuhf83assk7m2",
+    "SFDC_HEROKU_POSTGRES_PASSWORD": ""
+}
