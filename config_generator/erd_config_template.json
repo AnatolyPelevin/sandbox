@@ -1,0 +1,25 @@
+{
+  "HIVE_TABLE_NAME": null,
+  "TABLE_QUERY": null,
+  "DESTINATION_TABLE_NAME": null,
+  "IS_PARTITIONED": false,
+  "PRIORITY": 10000,
+  "ENABLED": true,
+  "MISC": {
+    "addInsertTimestamp": false,
+    "rotateOldPartitions": true,
+    "makeTimestampsImpalaCompatible": false,
+    "onChangeExport": false
+  },
+  "FIELDS": [
+    {
+      "HIVE_NAME": null,
+      "SOURCE_NAME": null,
+      "DESTINATION_NAME": null,
+      "DATA_TYPE": null,
+      "COLUMN_ORDER": 1,
+      "IS_NULL": false,
+      "MISC": {}
+    }
+  ]
+}

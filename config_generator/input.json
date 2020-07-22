@@ -1,0 +1,58 @@
+[
+    {
+        "TASK": "ADD FIELDS",
+        "CONFIG": "erd-configs",
+        "OBJECT": "abt_accountstatuses",
+        "SOURCE_DB": "ORACLE",
+        "ENV": "RC",
+        "ATTRIBUTES": {
+            "FIELDS": {
+                "accountstatusid": "accountstatusid_dest"
+            }
+        }
+    },
+    {
+        "TASK": "ADD FIELDS",
+        "CONFIG": "erd-configs",
+        "OBJECT": "account_metrics",
+        "SOURCE": "ACCT_STATMETRICS_MV02",
+        "SOURCE_DB": "ORACLE",
+        "SCHEMA": "STAT",
+        "ENV": "RC",
+        "ATTRIBUTES": {
+            "DESTINATION_TABLE_NAME": null,
+            "IS_PARTITIONED": false,
+            "PRIORITY": 10000,
+            "FIELDS": {
+                "ALL": true
+            }
+        }
+    },
+    {
+        "TASK": "REMOVE FIELDS",
+        "CONFIG": "erd-configs",
+        "OBJECT": "abt_accountstatuses",
+        "ENV": "ATT",
+        "ATTRIBUTES": {
+            "FIELDS": {
+                "accountstatusid": null
+            }
+        }
+    },
+    {
+        "TASK": "CHANGE OBJECT CONFIG",
+        "CONFIG": "erd-configs",
+        "OBJECT": "abt_accountstatuses",
+        "ENV": "RC",
+        "ATTRIBUTES": {
+            "PRIORITY": 1
+        }
+    },
+    {
+        "TASK": "REMOVE OBJECT",
+        "CONFIG": "erd-configs",
+        "OBJECT": "abt_accountstatuses",
+        "ENV": "ATT",
+        "ATTRIBUTES": {}
+    }
+]
