@@ -31,7 +31,7 @@ if __name__ == '__main__':
                         default="sjc01-c01-hdc04.c01.ringcentral.com")
 
     parser.add_argument('--projectpath', nargs=1,
-                        help="JSON tasks file",
+                        help="Absolute path to project",
                         type=str,
                         default=".")
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
                         type=argparse.FileType('r'))
 
     parser.add_argument('--config_path', nargs=1,
-                        help="config path",
+                        help="Absolute path to config",
                         type=str)
 
     arguments = parser.parse_args()
@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
     config["user"] = arguments.user[0]
     config["password"] = arguments.password[0]
-    config["attempts"] = arguments.attempts[0]
+    config["attempts"] = arguments.attempts
     config["ssh_host"] = arguments.sshhost[0]
     config["pwd"] = arguments.projectpath[0]
     config["config_path"] = arguments.config_path[0]

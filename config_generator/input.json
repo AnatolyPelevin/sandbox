@@ -78,7 +78,6 @@
         "CONFIG": "sfdc-config",
         "OBJECT": "lead_qualification__c",
         "SOURCE": "lead_qualification__c",
-        "SCHEMA": "",
         "SOURCE_DB": "HEROKU",
         "ENV": "RC",
         "ATTRIBUTES": {

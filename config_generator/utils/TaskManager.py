@@ -21,7 +21,7 @@ class TaskManager:
         task_name = task["TASK"]
         tasks_dict = {
             "ADD FIELDS": self.addFields,
-            "REMOVE FIELDS": self.removeFields,
+                "REMOVE FIELDS": self.removeFields,
             "CHANGE OBJECT CONFIG": self.changeConfig,
             "REMOVE OBJECT": self.removeObject,
             "CHECK DATATYPE CAST": self.checkDataCast,
@@ -66,7 +66,7 @@ class TaskManager:
         checked_fields_dict = {}
         for item in fields_dict.keys():
             if item not in source_schema.keys():
-                logging.error("No field %s for object %s at source" % (item, object_json["HIVE_TABLE_NAME"]))
+                logging.error("FieldNotFound:No field %s for object %s at source" % (item, object_json["HIVE_TABLE_NAME"]))
             else:
                 checked_fields_dict.update({item: fields_dict[item]})
         result = self.check_duplicates(object_json, checked_fields_dict)
@@ -229,7 +229,7 @@ class TaskManager:
             if config_type != generated_data_type:
                 flag = False
                 logging.warning(
-                    "DataTypeMissCast: Config: '%s', Object: '%s', Field: '%s' - (config_type, generated_type, schema_type) = (%s, %s, %s)" % (
+                    "DataTypeMisCast: Config: '%s', Object: '%s', Field: '%s' - (config_type, generated_type, schema_type) = (%s, %s, %s)" % (
                         task["CONFIG"], task["OBJECT"], item, config_type, generated_data_type, schema_datatype))
         if flag:
             logging.info("Config datatypes are correct for : %s" % (task["OBJECT"],))
@@ -245,7 +245,7 @@ class TaskManager:
             object_json = self.utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
         else:
-            logging.warning("Object config for object %s not found, path: %s" % (task["OBJECT"], full_path))
+            logging.warning("ObjectNotFound: Object config for object %s not found, path: %s" % (task["OBJECT"], full_path))
             try:
                 assert "HIVE_TABLE_NAME" in task["ATTRIBUTES"].keys(), logging.error(
                     "'HIVE_TABLE_NAME' field of task with number %s is wrong" % (task["NUMBER"],))
@@ -286,7 +286,7 @@ class TaskManager:
         if not bool(fields_dict):
             logging.error(
                 "SkippedTask: %s - fields from task are already in config" % (task["NUMBER"],))
-            return True
+            return False
 
         fields_template = \
             self.utils.readTemplate(self.config["pwd"], task["CONFIG"].split("-")[0].lower())["FIELDS"][0]
