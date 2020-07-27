@@ -53,10 +53,8 @@ class ConfigBuilder:
         return False
 
     def getIngectionType(self, reader, task, column_name, source_schema, column_order):
-        if task["SOURCE_DB"] in self.ingestion_types_dict.keys():
-            return self.ingestion_types_dict[task["SOURCE_DB"]]
-        else:
-            raise NotImplementedError
+        ingestion_type = self.ingestion_types_dict[task["SOURCE_DB"]]
+        return ingestion_type
 
     def getMisc(self, reader, task, column_name, source_schema, column_order):
         misc_dict = {
@@ -84,6 +82,6 @@ class ConfigBuilder:
         else:
             object_json["TABLE_QUERY"] = task["ATTRIBUTES"]["TABLE_QUERY"].lower()
 
-        logging.info("Config from template for object %s was created" % (task["OBJECT"],))
+        logging.info("Config from template for object '{task_object}' was created".format(task_object=task["OBJECT"]))
 
         return object_json

@@ -1,6 +1,7 @@
-from simple_salesforce import Salesforce
+from simple_salesforce import Salesforce, SFType
 from collections import OrderedDict
 from readers.Reader import Reader
+import multiprocessing as mp
 import logging
 
 
@@ -16,32 +17,39 @@ class SalesForceReader(Reader):
         self.attempts = config['attempts']
 
     def getSchema(self, object_name):
-        schema = {}
         attempt = 0
-        baseURL = self.session.base_url.split('/services')[
-                      0] + '/services/data/v42.0/sobjects/' + object_name + '/describe'
-
+        result = {}
         while attempt < self.attempts:
-            try:
-                attempt += 1
-                result = self.session._call_salesforce('GET', url=baseURL).json(object_pairs_hook=OrderedDict)
+            attempt += 1
+            ctx = mp.get_context('spawn')
+            queue = ctx.Queue()
+            process = mp.Process(target=self.callSalesforce(object_name, queue))
+            process.start()
+            process.join(20)
+            if process.is_alive():
+                if attempt == self.attempts:
+                    logging.error("SalesForce connection Timeout")
+                    raise TimeoutError
+                else:
+                    logging.error("Timed out while getting schema of object {object_name}. Run next attempt.".format(
+                        object_name=object_name))
+            else:
+                result = queue.get()
                 break
-            except Exception:
-                print("Timed out while getting schema of object %s. Run next attempt." % (object_name,))
 
-            if attempt == self.attempts:
-                raise Exception("Timeout")
-
-        for item in result['fields']:
-            schema[item['name'].lower()] = {'field_name': item['name'],
-                                            'type': item['type'],
-                                            'length': item['length']}
+        schema = {item['name'].lower(): {'field_name': item['name'], 'type': item['type'], 'length': item['length']}
+                  for item in result['fields']}
 
         return schema
 
+    def callSalesforce(self, object_name, q):
+        sf_type = SFType(object_name,self.session.session_id,self.session.sf_instance)
+        result = sf_type.describe()
+        q.put(result)
+
     def getDataType(self, source_type, length, field_name):
         type_cast = {
-            'string': 'varchar(%s)' % (length * 4,),
+            'string': 'varchar({type_length})'.format(type_length=length * 4),
             'date': 'timestamp',
             'double': 'float',
             'boolean': 'boolean',
@@ -60,5 +68,10 @@ class SalesForceReader(Reader):
         if source_type in type_cast:
             return type_cast[source_type]
         else:
-            logging.error("DataTypeNotFound: Not such datatype: %s for field %s" % (source_type, field_name))
-            raise Exception("Not such datatype: %s for field %s" % (source_type, field_name))
+            logging.error(
+                "DataTypeNotFound: Not such datatype: {source_type} for field {field_name}".format(
+                    source_type=source_type,
+                    field_name=field_name
+                )
+            )
+            raise KeyError

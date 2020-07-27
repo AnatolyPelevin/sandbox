@@ -25,13 +25,15 @@ class HerokuReader(Reader):
                                 )
         cur = conn.cursor()
 
-        query = """SELECT column_name, data_type, character_maximum_length
-                           FROM information_schema.columns
-                           WHERE table_schema = 'salesforce'
-                           AND table_name   = '%s';
-                        """ % (object_name.lower(),)
+        query = """
+                    SELECT column_name, 
+                           data_type, 
+                           character_maximum_length
+                      FROM information_schema.columns 
+                     WHERE table_schema = 'salesforce' AND table_name   = '{obj_name}';
+                """.format(obj_name=object_name.lower())
 
-        logging.info("Source schema query: %s" % (query,))
+        logging.info("Source schema query: {query}".format(query=query))
 
         cur.execute(query)
         result = cur.fetchall()
@@ -39,17 +41,15 @@ class HerokuReader(Reader):
         conn.close()
         self.ssh_tunnel.stop()
 
-        schema = {}
-        for item in result:
-            schema[item[0].lower()] = {'field_name': item[0],
-                                       'type': item[1],
-                                       'length': item[2]}
+        schema = {field_name.lower(): {'field_name': field_name, 'type': type, 'length': length}
+                  for (field_name, type, length) in result}
+
         return schema
 
     def getDataType(self, source_type, length, name):
         length = length if length != None else 0
         type_cast = {
-            'character varying': 'varchar(%s)' % (length * 4,),
+            'character varying': 'varchar({type_length})'.format(type_length=length * 4),
             'double precision': 'float',
             'timestamp without time zone': 'timestamp',
             'date': 'timestamp',
@@ -57,7 +57,13 @@ class HerokuReader(Reader):
             'integer': 'bigint',
             'boolean': 'boolean'
         }
-        if source_type in type_cast:
+        try:
             return type_cast[source_type]
-        else:
-            raise Exception("Not such datatype: '%s' for field '%s'" % (source_type, name))
+        except KeyError:
+            logging.error(
+                "DataTypeNotFound: Not such datatype: {source_type} for field {field_name}".format(
+                    source_type=source_type,
+                    field_name=name
+                )
+            )
+            raise KeyError

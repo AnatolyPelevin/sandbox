@@ -3,6 +3,7 @@ from readers.SalesForceReader import SalesForceReader
 from readers.HerokuReader import HerokuReader
 from utils.Utils import Utils
 from utils.ConfigBuilder import ConfigBuilder
+from utils.TaskVerifier import TaskVerifier
 import os.path
 import os
 import copy
@@ -12,16 +13,14 @@ import logging
 class TaskManager:
 
     def __init__(self,
-                 config,
-                 utils=None):
+                 config):
         self.config = config
-        self.utils = Utils()
 
     def defineTask(self, task, full_path):
         task_name = task["TASK"]
         tasks_dict = {
             "ADD FIELDS": self.addFields,
-                "REMOVE FIELDS": self.removeFields,
+            "REMOVE FIELDS": self.removeFields,
             "CHANGE OBJECT CONFIG": self.changeConfig,
             "REMOVE OBJECT": self.removeObject,
             "CHECK DATATYPE CAST": self.checkDataCast,
@@ -56,8 +55,10 @@ class TaskManager:
         for item in fields_list:
             if item in object_config_fields_name:
                 logging.warning(
-                    "DuplicatedField: Field '%s' for object '%s' is in config" % (
-                        item, object_config["HIVE_TABLE_NAME"]))
+                    "DuplicatedField: Field '{item}' for object '{hive_table_name}' is in config".format(item=item,
+                                                                                                         hive_table_name=
+                                                                                                         object_config[
+                                                                                                             "HIVE_TABLE_NAME"]))
             else:
                 checked_fields.update({item: fields_dict[item]})
         return checked_fields
@@ -65,10 +66,16 @@ class TaskManager:
     def verifyFields(self, fields_dict, source_schema, object_json):
         checked_fields_dict = {}
         for item in fields_dict.keys():
-            if item not in source_schema.keys():
-                logging.error("FieldNotFound:No field %s for object %s at source" % (item, object_json["HIVE_TABLE_NAME"]))
-            else:
+            if item in source_schema.keys():
                 checked_fields_dict.update({item: fields_dict[item]})
+            else:
+                logging.error(
+                    "FieldNotFound:No field '{item}' for object '{hive_table_name}' at source".format(item=item,
+                                                                                                      hive_table_name=
+                                                                                                      object_json[
+                                                                                                          "HIVE_TABLE_NAME"]
+                                                                                                      )
+                )
         result = self.check_duplicates(object_json, checked_fields_dict)
         return result
 
@@ -78,7 +85,8 @@ class TaskManager:
                 task["SOURCE"] = object_json["TABLE_QUERY"].split(".")[1]
             else:
                 task["SOURCE"] = object_json["TABLE_QUERY"]
-            logging.info("Update 'SOURCE' field from object config for task with number: %s" % (task["NUMBER"],))
+            logging.info(
+                "Update 'SOURCE' field from object config for task with number: {number}".format(number=task["NUMBER"]))
 
         return task
 
@@ -87,65 +95,59 @@ class TaskManager:
         return result
 
     def process(self, tasks):
-        path_in = 'deployment/src/main/resources/include/json/config'
+        verifier = TaskVerifier()
+        failed_tasks = []
         for task in tasks:
-            try:
-                assert task["TASK"] is not None, logging.error(
-                    "'TASK' field of task with number %s is wrong" % (task["NUMBER"],))
-                assert task["CONFIG"] is not None and task["CONFIG"] in ["erd-configs", "sfdc-config"], logging.error(
-                    "'CONFIG' field of task with number %s is wrong" % (task["NUMBER"],))
-                assert task["OBJECT"] is not None, logging.error(
-                    "'OBJECT' field of task with number %s is wrong" % (task["NUMBER"],))
-                assert task["ENV"] is not None and task["ENV"] in ["RC", "ATT", "UAT"], logging.error(
-                    "'ENV' field of task with number %s is wrong" % (task["NUMBER"],))
-            except AssertionError:
-                logging.error("SkippedTask: %s - wrong task config" % (task["NUMBER"],))
-                continue
-            logging.info("Start task %s" % (task["NUMBER"]))
-            full_path = "%s/%s/%s/%s/%s.json.j2" % (self.config["config_path"],
-                                                    task['CONFIG'],
-                                                    path_in,
-                                                    task["ENV"].lower(),
-                                                    task["OBJECT"].lower()
-                                                    )
+            verification_response = verifier.verifyTask(task)
+            if verification_response:
+                logging.info("Start task {number}".format(number=task["NUMBER"]))
+                full_path = "{config_path}/{config}/{path_in_config}/{env}/{object}.json.j2".format(
+                    config_path=self.config["config_path"],
+                    config=task['CONFIG'],
+                    path_in_config='deployment/src/main/resources/include/json/config',
+                    env=task["ENV"].lower(),
+                    object=task["OBJECT"].lower()
+                )
 
-            result = self.defineTask(task, full_path)
+                result = self.defineTask(task, full_path)
 
-            if result:
-                logging.info("SUCCESS: Task %s was completed successfully" % (task["NUMBER"],))
+                if result:
+                    logging.info("SUCCESS: Task {number} was completed successfully".format(number=task["NUMBER"]))
+                else:
+                    number = task["NUMBER"]
+                    logging.error("FAILED: Task {number} was completed unsuccessfully".format(number=number))
+                    failed_tasks.append(number)
             else:
-                logging.error("FAILED: Task %s was completed unsuccessfully" % (task["NUMBER"],))
+                logging.error("SkippedTask: {number} - wrong task config".format(number=task["NUMBER"]))
+                continue
+        if failed_tasks:
+            logging.error("Next tasks finished unsuccessfully: {failed}".format(failed=failed_tasks))
+
 
     def removeFields(self, task, full_path):
         config_is_changed = False
         object_json = {}
         if os.path.exists(full_path):
-            object_json = self.utils.readObjectJson(full_path)
+            object_json = Utils.readObjectJson(full_path)
         else:
-            logging.error("SkippedTask: %s - object config not found" % (task["NUMBER"],))
+            logging.error("SkippedTask: {number} - object config not found".format(number=task["NUMBER"]))
             return False
 
-        try:
-            assert "FIELDS" in task["ATTRIBUTES"] and len(task["ATTRIBUTES"]["FIELDS"]) > 0, logging.error(
-                "'FIELDS' field of task with number %s is wrong" % (task["NUMBER"],))
-        except AssertionError:
-            logging.error("SkippedTask: %s - wrong task config" % (task["NUMBER"],))
-            return False
-
-        logging.info("Start task with number: %s" % (task["NUMBER"],))
+        logging.info("Start task with number: {number}".format(number=task["NUMBER"]))
 
         fields_dict = task["ATTRIBUTES"]["FIELDS"]
-        for item in fields_dict.keys():
-            order = [i for i in range(len(object_json["FIELDS"])) if object_json["FIELDS"][i]["HIVE_NAME"] == item][0]
+        for field in fields_dict.keys():
+            order = [id for id, item in enumerate(object_json["FIELDS"]) if item["HIVE_NAME"] == field][0]
             if not object_json["FIELDS"][order]["IS_NULL"]:
                 object_json["FIELDS"][order]["IS_NULL"] = True
                 config_is_changed = True
 
         if config_is_changed:
-            self.utils.writeConfig(full_path, object_json)
+            Utils.writeConfig(full_path, object_json)
         else:
             logging.error(
-                "NoChanges: %s - config has not changed" % (task["NUMBER"],))
+                "NoChanges: {number} - config has not changed".format(number=task["NUMBER"]))
+            return False
 
         return True
 
@@ -153,17 +155,10 @@ class TaskManager:
         config_is_changed = False
         object_json = {}
         if os.path.exists(full_path):
-            object_json = self.utils.readObjectJson(full_path)
+            object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
         else:
-            logging.error("SkippedTask: %s - object config not found" % (task["NUMBER"],))
-            return False
-
-        try:
-            assert len(task["ATTRIBUTES"]) > 0, logging.error(
-                "'FIELDS' field of task with number %s is wrong" % (task["NUMBER"],))
-        except AssertionError:
-            logging.error("SkippedTask: %s - wrong task config" % (task["NUMBER"],))
+            logging.error("SkippedTask: {number} - object config not found".format(number=task["NUMBER"]))
             return False
 
         for item in task["ATTRIBUTES"].keys():
@@ -172,10 +167,10 @@ class TaskManager:
                 config_is_changed = True
 
         if config_is_changed:
-            self.utils.writeConfig(full_path, object_json)
+            Utils.writeConfig(full_path, object_json)
         else:
             logging.error(
-                "NoChanges: %s - config has not changed" % (task["NUMBER"],))
+                "NoChanges: {number} - config has not changed".format(number=task["NUMBER"]))
 
         return True
 
@@ -183,9 +178,9 @@ class TaskManager:
         config_is_changed = False
         object_json = {}
         if os.path.exists(full_path):
-            object_json = self.utils.readObjectJson(full_path)
+            object_json = Utils.readObjectJson(full_path)
         else:
-            logging.error("SkippedTask: %s - object config not found" % (task["NUMBER"],))
+            logging.error("SkippedTask: {number} - object config not found".format(number=task["NUMBER"]))
             return False
 
         if object_json["ENABLED"]:
@@ -193,10 +188,10 @@ class TaskManager:
             config_is_changed = True
 
         if config_is_changed:
-            self.utils.writeConfig(full_path, object_json)
+            Utils.writeConfig(full_path, object_json)
         else:
             logging.error(
-                "NoChanges: %s - config has not changed" % (task["NUMBER"],))
+                "NoChanges: {number} - config has not changed".format(number=task["NUMBER"]))
 
         return True
 
@@ -205,10 +200,10 @@ class TaskManager:
 
         object_json = {}
         if os.path.exists(full_path):
-            object_json = self.utils.readObjectJson(full_path)
+            object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
         else:
-            logging.error("SkippedTask: %s - object config not found" % (task["NUMBER"],))
+            logging.error("SkippedTask: {number} - object config not found".format(number=task["NUMBER"]))
             return False
 
         reader = self.defineReader(task)
@@ -221,59 +216,61 @@ class TaskManager:
             try:
                 schema_datatype = source_schema[item]["type"]
             except KeyError:
-                logging.warning("FieldNotFound: Field '%s' for source schema of object '%s' at %s not found" % (
-                    item, task["OBJECT"], task["SOURCE_DB"]))
+                logging.warning(
+                    "FieldNotFound: Field '{item}' for source schema of object '{object}' at {source_db} not found".format(
+                        item=item,
+                        object=task["OBJECT"],
+                        source_db=task["SOURCE_DB"]
+                    )
+                )
                 continue
             config_type = object_fields_names[item]
             generated_data_type = config_builder.getDataType(reader, None, item, source_schema, None)
             if config_type != generated_data_type:
                 flag = False
                 logging.warning(
-                    "DataTypeMisCast: Config: '%s', Object: '%s', Field: '%s' - (config_type, generated_type, schema_type) = (%s, %s, %s)" % (
-                        task["CONFIG"], task["OBJECT"], item, config_type, generated_data_type, schema_datatype))
+                    "DataTypeMisCast: Config: '{config}', Object: '{object}', Field: '{item}' - (config_type, generated_type, schema_type) = ({config_type}, {generated_data_type}, {schema_datatype})".format(
+                        config=task["CONFIG"],
+                        object=task["OBJECT"],
+                        item=item,
+                        config_type=config_type,
+                        generated_data_type=generated_data_type,
+                        schema_datatype=schema_datatype
+                    )
+                )
         if flag:
-            logging.info("Config datatypes are correct for : %s" % (task["OBJECT"],))
+            logging.info("Config datatypes are correct for : {object}".format(object=task["OBJECT"]))
 
         return True
 
     def addFields(self, task, full_path):
         config_builder = ConfigBuilder(self.config)
+        verifier = TaskVerifier()
         config_is_changed = False
 
         object_json = {}
         if os.path.exists(full_path):
-            object_json = self.utils.readObjectJson(full_path)
+            object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
         else:
-            logging.warning("ObjectNotFound: Object config for object %s not found, path: %s" % (task["OBJECT"], full_path))
-            try:
-                assert "HIVE_TABLE_NAME" in task["ATTRIBUTES"].keys(), logging.error(
-                    "'HIVE_TABLE_NAME' field of task with number %s is wrong" % (task["NUMBER"],))
-                assert "TABLE_QUERY" in task["ATTRIBUTES"].keys(), logging.error(
-                    "'TABLE_QUERY' field of task with number %s is wrong" % (task["NUMBER"],))
-                assert "DESTINATION_TABLE_NAME" in task["ATTRIBUTES"].keys(), logging.error(
-                    "'DESTINATION_TABLE_NAME' field of task with number %s is wrong" % (task["NUMBER"],))
-                assert "SOURCE" in task.keys(), logging.error(
-                    "'SOURCE' field of task with number %s is wrong" % (task["NUMBER"],))
-            except AssertionError:
-                logging.error("SkippedTask: %s - wrong task config" % (task["NUMBER"],))
+            logging.warning(
+                "ObjectNotFound: Object config for object {object} not found, path: {full_path}".format(
+                    object=task["OBJECT"],
+                    full_path=full_path
+                )
+            )
+            verification_response = verifier.veriyAddObject(task)
+            if verification_response:
+                object_json = config_builder.createObjectFromTemplate(task)
+            else:
+                logging.error("SkippedTask: {number} - wrong task config".format(number=task["NUMBER"]))
                 return False
-            object_json = config_builder.createObjectFromTemplate(task)
-
-        try:
-            assert task["SOURCE_DB"] in ["ORACLE", "HEROKU", "SALESFORCE"], logging.error(
-                "'SOURCE_DB' field of task with number %s is wrong" % (task["NUMBER"],))
-            assert ("FIELDS" in task["ATTRIBUTES"] and len(task["ATTRIBUTES"]["FIELDS"]) > 0) or "ALL" in task[
-                "ATTRIBUTES"], logging.error("'ATTRIBUTES' field of task with number %s is wrong" % (task["NUMBER"],))
-        except AssertionError:
-            logging.error("SkippedTask: %s - wrong task config" % (task["NUMBER"],))
-            return False
 
         reader = self.defineReader(task)
 
         source_schema = reader.getSchema(task["SOURCE"])
         if not bool(source_schema):
-            logging.error("SkippedTask: %s - source schema not found" % (task["NUMBER"],))
+            logging.error("SkippedTask: {number} - source schema not found".format(number=task["NUMBER"]))
             return False
 
         fields_dict = {}
@@ -285,11 +282,11 @@ class TaskManager:
 
         if not bool(fields_dict):
             logging.error(
-                "SkippedTask: %s - fields from task are already in config" % (task["NUMBER"],))
+                "SkippedTask: {number} - fields from task are already in config".format(number=task["NUMBER"]))
             return False
 
         fields_template = \
-            self.utils.readTemplate(self.config["pwd"], task["CONFIG"].split("-")[0].lower())["FIELDS"][0]
+            Utils.readTemplate(self.config["pwd"], task["CONFIG"].split("-")[0].lower())["FIELDS"][0]
         column_order = self.getMaxColumnOrder(object_json)
         for item in fields_dict.keys():
             column_order += 1
@@ -305,20 +302,20 @@ class TaskManager:
             config_is_changed = True
 
         if config_is_changed:
-            self.utils.writeConfig(full_path, object_json)
+            Utils.writeConfig(full_path, object_json)
         else:
             logging.error(
-                "NoChanges: %s - config has not changed" % (task["NUMBER"],))
+                "NoChanges: {number} - config has not changed".format(number=task["NUMBER"]))
 
         return True
 
     def checkSalesForceApiName(self, task, full_path):
         object_json = {}
         if os.path.exists(full_path):
-            object_json = self.utils.readObjectJson(full_path)
+            object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
         else:
-            logging.error("SkippedTask: %s - object config not found" % (task["NUMBER"],))
+            logging.error("SkippedTask: {number} - object config not found".format(number=task["NUMBER"]))
             return False
 
         reader = self.defineReader(task)
@@ -326,12 +323,15 @@ class TaskManager:
 
         flag = True
         for item in object_json["FIELDS"]:
-            schema_datatype = None
             if item["MISC"]["salesforceApiName"] not in source_schema.keys():
-                logging.error("WrongSalesForceApiName: SalesForceApiName for field '%s' of object '%s' is wrong" % (
-                    item["HIVE_NAME"], object_json["HIVE_TABLE_NAME"]))
+                logging.error(
+                    "WrongSalesForceApiName: SalesForceApiName for field '{hive_name}' of object '{hive_table_name}' is wrong".format(
+                        hive_name=item["HIVE_NAME"],
+                        hive_table_name=object_json["HIVE_TABLE_NAME"]
+                    )
+                )
                 flag = False
         if flag:
-            logging.info("Config datatypes are correct for : %s" % (item,))
+            logging.info("SalesForceApiName is correct for : {item}".format(item=item))
 
         return True
