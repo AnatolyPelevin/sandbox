@@ -21,17 +21,21 @@ class OracleReader(Reader):
         connect = cx_Oracle.connect(self.user, self.password, connection)
         cursor = connect.cursor()
 
-        query = "SELECT COLUMN_NAME, DATA_TYPE, DATA_LENGTH FROM all_tab_cols WHERE table_name='%s'" % (object_name.upper(),)
+        query = """
+                    SELECT column_name,
+                           data_type,
+                           data_length
+                      FROM all_tab_cols
+                     WHERE table_name='{object_name}'
+                """.format(object_name=object_name)
 
-        logging.info("Source schema query: %s" % (query,))
+        logging.info("Source schema query: {query}".format(query=query))
 
         cursor.execute(query)
 
-        schema = {}
-        for row in cursor:
-            schema[row[0].lower()] = {'field_name': row[0],
-                                      'type': row[1],
-                                      'length': row[2]}
+        schema = {field_name.lower(): {'field_name': field_name, 'type': type, 'length': length}
+          for (field_name, type, length) in cursor}
+
         cursor.close()
         connect.close()
         return schema
@@ -40,15 +44,19 @@ class OracleReader(Reader):
         type_cast = {
             'NUMBER': 'bigint',
             'NVARCHAR2': 'varchar',
-            'NVARCHAR2': 'varchar',
             'DATE': 'timestamp',
             'TIMESTAMP(3) WITH LOCAL TIME ZONE': 'timestamp',
             'TIMESTAMP(6) WITH LOCAL TIME ZONE': 'timestamp',
             'TIMESTAMP(0) WITH LOCAL TIME ZONE': 'timestamp',
-            'VARCHAR2': 'varchar',
             'VARCHAR2': 'varchar'
         }
-        if source_type in type_cast:
+        try:
             return type_cast[source_type]
-        else:
-            raise Exception("Not such datatype: %s for field %s" % (source_type, field_name))
+        except KeyError:
+            logging.error(
+                "DataTypeNotFound: Not such datatype: {source_type} for field {field_name}".format(
+                    source_type=source_type,
+                    field_name=field_name
+                )
+            )
+            raise KeyError
