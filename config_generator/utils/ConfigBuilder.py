@@ -30,18 +30,18 @@ class ConfigBuilder:
             raise NotImplementedError
 
     def getHiveName(self, reader, task, column_name, source_schema, column_order):
-        return column_name
+        return column_name.lower()
 
     def getSourceName(self, reader, task, column_name, source_schema, column_order):
-        return column_name
+        return column_name.lower()
 
     def getDestinationName(self, reader, task, column_name, source_schema, column_order):
         attribute_fields = task["ATTRIBUTES"]["FIELDS"]
 
         if "ALL" in attribute_fields or attribute_fields[column_name] is None:
-            return column_name
+            return column_name.lower()
         else:
-            return attribute_fields[column_name]
+            return attribute_fields[column_name].lower()
 
     def getDataType(self, reader, task, column_name, source_schema, column_order):
         source_type = source_schema[column_name]["type"]
@@ -60,7 +60,7 @@ class ConfigBuilder:
 
     def getMisc(self, reader, task, column_name, source_schema, column_order):
         misc_dict = {
-            "sfdc-config": {"salesforceApiName": column_name},
+            "sfdc-config": {"salesforceApiName": column_name.lower()},
             "erd-configs": {}
         }
         if task["CONFIG"] in misc_dict.keys():
