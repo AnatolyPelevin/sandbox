@@ -17,20 +17,6 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-hive_${spark.scala.binary.version}</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.scalikejdbc</groupId>
-            <artifactId>scalikejdbc_${spark.scala.binary.version}</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.scopt</groupId>
-            <artifactId>scopt_${spark.scala.binary.version}</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 
     <build>
