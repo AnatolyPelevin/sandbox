@@ -5,12 +5,12 @@ class TaskVerifier:
 
     def __defineVerifier(self, task):
         types_of_tasks = {
-            "ADD FIELDS": self.__verifyAddFields,
-            "REMOVE FIELDS": self.__verifyRemoveFields,
-            "CHANGE OBJECT CONFIG": self.__verifyChangeConfig,
-            "REMOVE OBJECT": self.__verifyRemoveObject,
-            "CHECK DATATYPE CAST": self.__verifyCheckDataCast,
-            "CHECK SALESFORCE API NAME": self.__verifCheckSalesForceApiName
+            "ADD FIELDS": self._verifyAddFields,
+            "REMOVE FIELDS": self._verifyRemoveFields,
+            "CHANGE OBJECT CONFIG": self._verifyChangeConfig,
+            "REMOVE OBJECT": self._verifyRemoveObject,
+            "CHECK DATATYPE CAST": self._verifyCheckDataCast,
+            "CHECK SALESFORCE API NAME": self._verifCheckSalesForceApiName
         }
         return types_of_tasks[task["TASK"]](task)
 
@@ -35,7 +35,7 @@ class TaskVerifier:
         return flag
 
     @staticmethod
-    def __verifyAddFields(task):
+    def _verifyAddFields(task):
         flag = True
         if task["SOURCE_DB"] not in ["ORACLE", "HEROKU", "SALESFORCE"]:
             logging.error("'SOURCE_DB' field of task with number {number} is wrong".format(number=task["NUMBER"]))
@@ -65,7 +65,7 @@ class TaskVerifier:
         return flag
 
     @staticmethod
-    def __verifyRemoveFields(task):
+    def _verifyRemoveFields(task):
         flag = True
         if "FIELDS" not in task["ATTRIBUTES"] or len(task["ATTRIBUTES"]["FIELDS"]) == 0:
             logging.error("'FIELDS' field of task with number {number} is wrong".format(number=task["NUMBER"]))
@@ -73,7 +73,7 @@ class TaskVerifier:
         return flag
 
     @staticmethod
-    def __verifyChangeConfig(task):
+    def _verifyChangeConfig(task):
         flag = True
         if len(task["ATTRIBUTES"]) == 0:
             logging.error("'FIELDS' field of task with number {number} is wrong".format(number=task["NUMBER"]))
@@ -81,13 +81,13 @@ class TaskVerifier:
         return flag
 
     @staticmethod
-    def __verifyRemoveObject(task):
+    def _verifyRemoveObject(task):
         return True
 
     @staticmethod
-    def __verifyCheckDataCast(task):
+    def _verifyCheckDataCast(task):
         return True
 
     @staticmethod
-    def __verifCheckSalesForceApiName(task):
+    def _verifCheckSalesForceApiName(task):
         return True

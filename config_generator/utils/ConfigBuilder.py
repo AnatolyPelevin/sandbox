@@ -36,8 +36,9 @@ class ConfigBuilder:
         return column_name
 
     def getDestinationName(self, reader, task, column_name, source_schema, column_order):
-        if "ALL" not in task["ATTRIBUTES"]["FIELDS"] and task["ATTRIBUTES"]["FIELDS"][column_name] is not None:
-            return task["ATTRIBUTES"]["FIELDS"][column_name]
+        attribute_fields = task["ATTRIBUTES"]["FIELDS"]
+        if "ALL" not in attribute_fields and attribute_fields[column_name] is not None:
+            return attribute_fields[column_name]
         else:
             return column_name
 

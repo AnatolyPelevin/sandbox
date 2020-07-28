@@ -33,6 +33,8 @@ class SalesForceReader(Reader):
                 else:
                     logging.error("Timed out while getting schema of object {object_name}. Run next attempt.".format(
                         object_name=object_name))
+                    process.kill()
+                    process.close()
             else:
                 result = queue.get()
                 break
