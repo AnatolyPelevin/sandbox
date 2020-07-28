@@ -1,0 +1,39 @@
+# runtime options for this scenario:
+# git_branch (should be "" if release), env_type (dev, prod or release)
+
+common:
+    namespace: bigdata_project_template_{{ env_type }}{{ "_" + git_branch|replace('-', '_') if git_branch != "" else "" }}
+    projectName: bigdata_project_template
+    hdfsProjectDirRoot: hdfs://{{ NAMENODE }}/envs/{{ env_type }}/bigdata_project_template{{ "/" + git_branch if git_branch != "" else "" }}
+    oozieAppsNameSuffix: {{ env_type }}{{ "_" + git_branch if git_branch != "" else "" }}
+    hiveDBName: bigdata_project_template_{{ env_type }}{{ "_" + git_branch|lower|replace("-","_") if git_branch != "" else "" }}
+    verticaDBName: bigdata_project_template_{{ env_type }}{{ "_" + git_branch|lower|replace("-","_") if git_branch != "" else "" }}
+    etlDbUrl: jdbc:postgresql://{{ APPS_DB_HOST }}:{{ APPS_DB_PORT }}/{{ APPS_DB_NAME }}?currentSchema=bigdata_project_template_{{ env_type|upper }}{{ "_" + git_branch|upper|replace("-","_") if git_branch != "" else "" }}&zeroDateTimeBehavior=convertToNull
+    etlDb: bigdata_project_template_{{ env_type|upper }}{{ "_" + git_branch|upper|replace("-","_") if git_branch != "" else "" }}
+    wfFrequency: 1 1 * *
+    maxVerticaThreads: 15
+    sparkEventlogDir: /user/spark/applicationHistory
+    BIGDATA_PROJECT_TEMPLATE_MEMORY: {'driver_memory': 4096, 'driver_memory_overhead': 2048, 'driver_max_direct_memory_size': 512, 'executor_memory': 4096, 'executor_memory_overhead': 2048, 'executor_max_direct_memory_size': 512, 'executors': 2, 'kryoserializer_buffer_max': 128, 'vertica_result_buffer_size': 10240}
+    TEMPLATE_VERTICA_USER_NAME: dbadmin
+    TEMPLATE_VERTICA_USER_PASSWORD: dbpassword
+
+dev-eurolab:
+    appUser: AGW_dev
+    wfFrequency: 30
+
+bsa:
+    appUser: bigdata-project-template_dev
+
+stage:
+    appUser: bigdata-project-template_dev
+    wfFrequency: 90
+
+uat:
+    appUser: bigdata-project-template_dev
+
+production:
+    appUser: bigdata-project-template_prod
+
+att:
+    appUser: bigdata-project-template_prod
+

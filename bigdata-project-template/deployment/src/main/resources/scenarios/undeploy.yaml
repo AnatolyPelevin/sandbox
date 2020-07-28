@@ -1,0 +1,20 @@
+- hosts:
+    - cloudera_manager
+  become: yes
+  become_user: "{{ appUser }}"
+  tasks:
+    - name: Delete Oozie coordinator
+      with_items:
+        - "workflow-template"
+      oozie_coordinator:
+        name: "{{ item }}_{{ oozieAppsNameSuffix }}"
+        oozie_url: "{{ OOZIE_SERVER_URL }}"
+        state: absent
+
+    - name: Delete HDFS files
+      with_items:
+        - "tmp"
+        - "workspace"
+      hdfs_file:
+        name: "{{ hdfsProjectDirRoot }}/{{ item }}"
+        state: absent

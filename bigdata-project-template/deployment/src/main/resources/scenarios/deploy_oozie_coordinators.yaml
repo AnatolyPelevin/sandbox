@@ -1,0 +1,6 @@
+- hosts:
+    - cloudera_manager
+  become: yes
+  become_user: "{{ appUser }}"
+  tasks:
+    - include: "{{ include_dir }}/deploy_oozie_coordinators.yaml"

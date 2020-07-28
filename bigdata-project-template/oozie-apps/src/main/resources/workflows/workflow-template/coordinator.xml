@@ -1,0 +1,19 @@
+<coordinator-app name="workflow-template_${oozieAppsNameSuffix}" frequency="${wfFrequencyMin}"
+                 start="${wfStartTimeUTC}" end="${wfEndTimeUTC}" timezone="UTC"
+                 xmlns="uri:oozie:coordinator:0.4" xmlns:sla="uri:oozie:sla:0.2">
+    <controls>
+        <execution>LAST_ONLY</execution>
+    </controls>
+
+    <action>
+        <workflow>
+            <app-path>${workflowPath}</app-path>
+            <configuration>
+                <property>
+                    <name>dt</name>
+                    <value>${coord:formatTime(coord:actualTime(), 'yyyy-MM-dd')}</value>
+                </property>
+            </configuration>
+        </workflow>
+    </action>
+</coordinator-app>

@@ -1,0 +1,63 @@
+---
+- name: Cleanup temp dir
+  file:
+    path: "/tmp/{{ projectName }}-{{ app_version }}-oozie-apps"
+    state: absent
+
+- name: Create tmp dir
+  file:
+    path: "/tmp/{{ projectName }}-{{ app_version }}-oozie-apps"
+    state: directory
+    mode: 0775
+
+- name: Unpack Oozie artifact
+  unarchive:
+    src: "{{ include_dir }}/lib/oozie-apps-{{ app_version }}.tar.gz"
+    dest: "/tmp/{{ projectName }}-{{ app_version }}-oozie-apps"
+
+- name: Cleanup target HDFS directory
+  hdfs_file:
+    name: "{{ hdfsProjectDirRoot }}/workspace/oozie-apps"
+    state: absent
+
+- name: Create target hdfs directory
+  become_user: "{{ appUser }}"
+  hdfs_file:
+    path: "{{ hdfsProjectDirRoot }}/workspace/oozie-apps"
+    mode: 775
+    state: directory
+
+- name: Copy oozie lib files to hdfs
+  with_items:
+    - "lib"
+    - "workflow-template"
+  hdfs_put:
+    src: "/tmp/{{ projectName }}-{{ app_version }}-oozie-apps/oozie-apps-{{ app_version }}/{{ item }}"
+    dest: "{{ hdfsProjectDirRoot }}/workspace/oozie-apps"
+
+- name: Make dir for hive config
+  hdfs_file:
+    path: "{{ hdfsProjectDirRoot }}/workspace/oozie-apps/lib/xml"
+    mode: 775
+    state: directory
+
+- name: Copy hive config
+  hdfs_put:
+    src: /etc/hive/conf/hive-site.xml
+    dest: "{{ hdfsProjectDirRoot }}/workspace/oozie-apps/lib/xml"
+
+- name: Render Oozie configuration files
+  with_items:
+    - "workflow-template"
+  template:
+    src: "{{ include_dir }}/oozie/{{ item }}.properties.j2"
+    dest: "/tmp/{{ projectName }}-{{ app_version }}-oozie-apps/{{ item }}.properties"
+
+- name: Create Oozie coordinators
+  with_items:
+    - "workflow-template"
+  oozie_coordinator:
+    name: "{{ item }}_{{ oozieAppsNameSuffix }}"
+    oozie_url: "{{ OOZIE_SERVER_URL }}"
+    property_file: "/tmp/{{ projectName }}-{{ app_version }}-oozie-apps/{{ item }}.properties"
+    state: started

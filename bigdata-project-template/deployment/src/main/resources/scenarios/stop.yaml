@@ -1,0 +1,12 @@
+- hosts:
+    - cloudera_manager
+  become: yes
+  become_user: "{{ appUser }}"
+  tasks:
+    - name: Stop Oozie coordinator
+      with_items:
+        - "workflow-template"
+      oozie_coordinator:
+        name: "{{ item }}_{{ oozieAppsNameSuffix }}"
+        oozie_url: "{{ OOZIE_SERVER_URL }}"
+        state: suspended
