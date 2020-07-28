@@ -259,7 +259,7 @@ class TaskManager:
                     full_path=full_path
                 )
             )
-            verification_response = verifier.veriyAddObject(task)
+            verification_response = verifier.verifyAddObject(task)
             if verification_response:
                 object_json = config_builder.createObjectFromTemplate(task)
             else:
