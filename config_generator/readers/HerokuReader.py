@@ -66,4 +66,4 @@ class HerokuReader(Reader):
                     field_name=name
                 )
             )
-            raise KeyError
+            raise

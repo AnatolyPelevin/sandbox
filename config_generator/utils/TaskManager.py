@@ -45,7 +45,7 @@ class TaskManager:
 
     def getMaxColumnOrder(self, object_json):
         column_orders = [item['COLUMN_ORDER'] for item in object_json['FIELDS']]
-        count = 0 if not column_orders else max(column_orders)
+        count = max(column_orders) if column_orders else 0
         return count
 
     def check_duplicates(self, object_config, fields_dict):

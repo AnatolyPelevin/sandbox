@@ -22,7 +22,7 @@ class ETCD(object):
             self.key = etcd_keys[env]
         except Exception as e:
             logging.error(e)
-            logging.error(f"environment parameter is incorrect")
+            logging.error("environment parameter is incorrect")
             raise
 
     @staticmethod
@@ -39,12 +39,12 @@ class ETCD(object):
             return etcd
         except Exception as e:
             logging.error(e)
-            raise Exception(f"Connection to {environ.get('BDC_LBR')} etcd failed")
+            raise Exception("Connection to {env} etcd failed".format(env=environ.get('BDC_LBR')))
 
     def get_var(self, var_name):
         key = self.key + var_name
         try:
-            logging.info(f"Get {key} variable from etcd")
+            logging.info("Get {key} variable from etcd".format(key=key))
             result = self.etcd.get(key)
         except Exception as e:
             logging.error(e)

@@ -67,13 +67,13 @@ class SalesForceReader(Reader):
             'int': 'bigint',
             'multipicklist': 'varchar(16396)'
         }
-        if source_type in type_cast:
+        try:
             return type_cast[source_type]
-        else:
+        except KeyError:
             logging.error(
                 "DataTypeNotFound: Not such datatype: {source_type} for field {field_name}".format(
                     source_type=source_type,
                     field_name=field_name
                 )
             )
-            raise KeyError
+            raise

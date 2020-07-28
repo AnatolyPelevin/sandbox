@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     etcd = ETCD('stage')
 
-    if arguments.etcd_file is not None:
+    if arguments.etcd_file:
         etcd_json = json.load(arguments.etcd_file)
         for item in etcd_json.keys():
             config[item] = etcd_json[item]

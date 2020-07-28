@@ -59,4 +59,4 @@ class OracleReader(Reader):
                     field_name=field_name
                 )
             )
-            raise KeyError
+            raise

@@ -37,10 +37,11 @@ class ConfigBuilder:
 
     def getDestinationName(self, reader, task, column_name, source_schema, column_order):
         attribute_fields = task["ATTRIBUTES"]["FIELDS"]
-        if "ALL" not in attribute_fields and attribute_fields[column_name] is not None:
-            return attribute_fields[column_name]
-        else:
+
+        if "ALL" in attribute_fields or attribute_fields[column_name] is None:
             return column_name
+        else:
+            return attribute_fields[column_name]
 
     def getDataType(self, reader, task, column_name, source_schema, column_order):
         source_type = source_schema[column_name]["type"]
