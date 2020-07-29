@@ -30,7 +30,8 @@ class HerokuReader(Reader):
                            data_type, 
                            character_maximum_length
                       FROM information_schema.columns 
-                     WHERE table_schema = 'salesforce' AND table_name   = '{obj_name}';
+                     WHERE table_schema = 'salesforce' 
+                       AND table_name   = '{obj_name}';
                 """.format(obj_name=object_name.lower())
 
         logging.info("Source schema query: {query}".format(query=query))
@@ -47,7 +48,7 @@ class HerokuReader(Reader):
         return schema
 
     def getDataType(self, source_type, length, name):
-        length = length if length != None else 0
+        length = length if length else 0
         type_cast = {
             'character varying': 'varchar({type_length})'.format(type_length=length * 4),
             'double precision': 'float',

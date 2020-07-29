@@ -24,10 +24,7 @@ class ConfigBuilder:
             "INGESTION_TYPE": self.getIngectionType,
             "MISC": self.getMisc,
         }
-        if field_name in fields_dict.keys():
-            return fields_dict[field_name](reader, task, column_name, source_schema, column_order)
-        else:
-            raise NotImplementedError
+        return fields_dict[field_name](reader, task, column_name, source_schema, column_order)
 
     def getHiveName(self, reader, task, column_name, source_schema, column_order):
         return column_name.lower()
@@ -63,15 +60,10 @@ class ConfigBuilder:
             "sfdc-config": {"salesforceApiName": column_name.lower()},
             "erd-configs": {}
         }
-        if task["CONFIG"] in misc_dict.keys():
-            return misc_dict[task["CONFIG"]]
-        else:
-            raise NotImplementedError
+        return misc_dict[task["CONFIG"]]
 
     def createObjectFromTemplate(self, task):
-        utils = Utils()
-
-        object_json = utils.readTemplate(self.config["pwd"], task["CONFIG"].split("-")[0].lower())
+        object_json = Utils().readTemplate(self.config["pwd"], task["CONFIG"].split("-")[0].lower())
         object_json["HIVE_TABLE_NAME"] = task["ATTRIBUTES"]["HIVE_TABLE_NAME"]
         object_json["DESTINATION_TABLE_NAME"] = task["ATTRIBUTES"]["DESTINATION_TABLE_NAME"]
         object_json["FIELDS"] = []

@@ -26,10 +26,7 @@ class TaskManager:
             "CHECK DATATYPE CAST": self.checkDataCast,
             "CHECK SALESFORCE API NAME": self.checkSalesForceApiName
         }
-        if task_name in tasks_dict.keys():
-            return tasks_dict[task_name](task, full_path)
-        else:
-            raise NotImplementedError
+        return tasks_dict[task_name](task, full_path)
 
     def defineReader(self, task):
         source_name = task["SOURCE_DB"]
@@ -51,26 +48,25 @@ class TaskManager:
     def check_duplicates(self, object_config, fields_dict):
         object_config_fields_name = [item['HIVE_NAME'] for item in object_config['FIELDS']]
         checked_fields = {}
-        fields_list = fields_dict.keys()
-        for item in fields_list:
-            if item in object_config_fields_name:
+        for field in fields_dict:
+            if field in object_config_fields_name:
                 logging.warning(
-                    "DuplicatedField: Field '{item}' for object '{hive_table_name}' is in config".format(item=item,
+                    "DuplicatedField: Field '{item}' for object '{hive_table_name}' is in config".format(item=field,
                                                                                                          hive_table_name=
                                                                                                          object_config[
                                                                                                              "HIVE_TABLE_NAME"]))
             else:
-                checked_fields.update({item: fields_dict[item]})
+                checked_fields[field] = fields_dict[field]
         return checked_fields
 
     def verifyFields(self, fields_dict, source_schema, object_json):
         checked_fields_dict = {}
-        for item in fields_dict.keys():
-            if item in source_schema.keys():
-                checked_fields_dict.update({item: fields_dict[item]})
+        for field_name in fields_dict:
+            if field_name in source_schema:
+                checked_fields_dict[field_name] = fields_dict[field_name]
             else:
                 logging.error(
-                    "FieldNotFound:No field '{item}' for object '{hive_table_name}' at source".format(item=item,
+                    "FieldNotFound:No field '{item}' for object '{hive_table_name}' at source".format(item=field_name,
                                                                                                       hive_table_name=
                                                                                                       object_json[
                                                                                                           "HIVE_TABLE_NAME"]
@@ -86,7 +82,7 @@ class TaskManager:
             else:
                 task["SOURCE"] = object_json["TABLE_QUERY"]
             logging.info(
-                "Update 'SOURCE' field from object config for task with number: {number}".format(number=task["NUMBER"]))
+                "Update 'SOURCE' field from object config for task with identifier: {id}".format(id=task["IDENTIFIER"]))
 
         return task
 
@@ -100,7 +96,7 @@ class TaskManager:
         for task in tasks:
             verification_response = verifier.verifyTask(task)
             if verification_response:
-                logging.info("Start task {number}".format(number=task["NUMBER"]))
+                logging.info("Start task '{id}'".format(id=task["IDENTIFIER"]))
                 full_path = "{config_path}/{config}/{path_in_config}/{env}/{object}.json.j2".format(
                     config_path=self.config["config_path"],
                     config=task['CONFIG'],
@@ -112,13 +108,13 @@ class TaskManager:
                 result = self.defineTask(task, full_path)
 
                 if result:
-                    logging.info("SUCCESS: Task {number} was completed successfully".format(number=task["NUMBER"]))
+                    logging.info("SUCCESS: Task '{id}' was completed successfully \n".format(id=task["IDENTIFIER"]))
                 else:
-                    number = task["NUMBER"]
-                    logging.error("FAILED: Task {number} was completed unsuccessfully".format(number=number))
-                    failed_tasks.append(number)
+                    id = task["IDENTIFIER"]
+                    logging.error("FAILED: Task '{id}' was completed unsuccessfully \n".format(id=id))
+                    failed_tasks.append(id)
             else:
-                logging.error("SkippedTask: {number} - wrong task config".format(number=task["NUMBER"]))
+                logging.error("SkippedTask: '{id}' - wrong task config".format(id=task["IDENTIFIER"]))
                 continue
         if failed_tasks:
             logging.error("Next tasks finished unsuccessfully: {failed}".format(failed=failed_tasks))
@@ -130,10 +126,10 @@ class TaskManager:
         if os.path.exists(full_path):
             object_json = Utils.readObjectJson(full_path)
         else:
-            logging.error("SkippedTask: {number} - object config not found".format(number=task["NUMBER"]))
+            logging.error("SkippedTask: '{id}' - object config not found".format(id=task["IDENTIFIER"]))
             return False
 
-        logging.info("Start task with number: {number}".format(number=task["NUMBER"]))
+        logging.info("Start task with id: '{id}'".format(id=task["IDENTIFIER"]))
 
         fields_dict = task["ATTRIBUTES"]["FIELDS"]
         for field in fields_dict.keys():
@@ -146,7 +142,7 @@ class TaskManager:
             Utils.writeConfig(full_path, object_json)
         else:
             logging.error(
-                "NoChanges: {number} - config has not changed".format(number=task["NUMBER"]))
+                "NoChanges: '{id}' - config has not changed".format(id=task["IDENTIFIER"]))
             return False
 
         return True
@@ -158,7 +154,7 @@ class TaskManager:
             object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
         else:
-            logging.error("SkippedTask: {number} - object config not found".format(number=task["NUMBER"]))
+            logging.error("SkippedTask: '{id}' - object config not found".format(id=task["IDENTIFIER"]))
             return False
 
         for item in task["ATTRIBUTES"].keys():
@@ -170,7 +166,7 @@ class TaskManager:
             Utils.writeConfig(full_path, object_json)
         else:
             logging.error(
-                "NoChanges: {number} - config has not changed".format(number=task["NUMBER"]))
+                "NoChanges: '{id}' - config has not changed".format(id=task["IDENTIFIER"]))
 
         return True
 
@@ -180,7 +176,7 @@ class TaskManager:
         if os.path.exists(full_path):
             object_json = Utils.readObjectJson(full_path)
         else:
-            logging.error("SkippedTask: {number} - object config not found".format(number=task["NUMBER"]))
+            logging.error("SkippedTask: '{id}' - object config not found".format(id=task["IDENTIFIER"]))
             return False
 
         if object_json["ENABLED"]:
@@ -191,7 +187,7 @@ class TaskManager:
             Utils.writeConfig(full_path, object_json)
         else:
             logging.error(
-                "NoChanges: {number} - config has not changed".format(number=task["NUMBER"]))
+                "NoChanges: '{id}' - config has not changed".format(id=task["IDENTIFIER"]))
 
         return True
 
@@ -203,7 +199,7 @@ class TaskManager:
             object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
         else:
-            logging.error("SkippedTask: {number} - object config not found".format(number=task["NUMBER"]))
+            logging.error("SkippedTask: '{id}' - object config not found".format(id=task["IDENTIFIER"]))
             return False
 
         reader = self.defineReader(task)
@@ -269,7 +265,7 @@ class TaskManager:
         reader = self.defineReader(task)
 
         source_schema = reader.getSchema(task["SOURCE"])
-        if not bool(source_schema):
+        if not source_schema:
             logging.error("SkippedTask: {number} - source schema not found".format(number=task["NUMBER"]))
             return False
 
@@ -332,6 +328,7 @@ class TaskManager:
                 )
                 flag = False
         if flag:
-            logging.info("SalesForceApiName is correct for : {item}".format(item=item))
+            logging.info("SalesForceApiName is correct for : {item}".format(item=task["OBJECT"]))
+            return True
 
-        return True
+        return False

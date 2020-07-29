@@ -27,7 +27,7 @@ class OracleReader(Reader):
                            data_length
                       FROM all_tab_cols
                      WHERE table_name='{object_name}'
-                """.format(object_name=object_name)
+                """.format(object_name=object_name.upper())
 
         logging.info("Source schema query: {query}".format(query=query))
 

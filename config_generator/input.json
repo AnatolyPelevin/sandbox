@@ -1,6 +1,6 @@
 [
     {
-        "NUMBER": 1,
+        "IDENTIFIER": 1,
         "TASK": "ADD FIELDS",
         "CONFIG": "erd-configs",
         "OBJECT": "abt_accountstatuses",
@@ -13,7 +13,7 @@
         }
     },
     {
-        "NUMBER": 2,
+        "IDENTIFIER": 2,
         "TASK": "REMOVE FIELDS",
         "CONFIG": "erd-configs",
         "OBJECT": "abt_accountstatuses",
@@ -25,7 +25,7 @@
         }
     },
     {
-        "NUMBER": 3,
+        "IDENTIFIER": 3,
         "TASK": "CHANGE OBJECT CONFIG",
         "CONFIG": "erd-configs",
         "OBJECT": "abt_accountstatuses",
@@ -35,7 +35,7 @@
         }
     },
     {
-        "NUMBER": 4,
+        "IDENTIFIER": 4,
         "TASK": "REMOVE OBJECT",
         "CONFIG": "erd-configs",
         "OBJECT": "abt_accountstatuses",
@@ -43,7 +43,7 @@
         "ATTRIBUTES": {}
     },
     {
-        "NUMBER": 5,
+        "IDENTIFIER": 5,
         "TASK": "CHECK DATATYPE CAST",
         "CONFIG": "erd-configs",
         "OBJECT": "abt_accountstatuses",
@@ -53,7 +53,7 @@
         }
     },
     {
-        "NUMBER": 6,
+        "IDENTIFIER": 6,
         "TASK": "CHECK DATATYPE CAST",
         "CONFIG": "sfdc-config",
         "OBJECT": "order",
@@ -63,7 +63,7 @@
         }
     },
     {
-        "NUMBER": 7,
+        "IDENTIFIER": 7,
         "TASK": "CHECK DATATYPE CAST",
         "CONFIG": "sfdc-config",
         "OBJECT": "lead",
@@ -73,7 +73,7 @@
         }
     },
     {
-        "NUMBER": 8,
+        "IDENTIFIER": 8,
         "TASK": "ADD FIELDS",
         "CONFIG": "sfdc-config",
         "OBJECT": "lead_qualification__c",
@@ -90,7 +90,7 @@
         }
     },
     {
-        "NUMBER": 9,
+        "IDENTIFIER": 9,
         "TASK": "ADD FIELDS",
         "CONFIG": "erd-configs",
         "OBJECT": "usersconlicenseslog",
@@ -107,7 +107,7 @@
         }
     },
     {
-        "NUMBER": 10,
+        "IDENTIFIER": 10,
         "TASK": "CHECK SALESFORCE API NAME",
         "CONFIG": "sfdc-config",
         "OBJECT": "lead_qualification__c",
