@@ -1,0 +1,18 @@
+image: docker-registry.lab.nordigy.ru:443/bgr/java-build
+
+variables:
+  MAVEN_CLI_OPTS: "-s /mnt/settings.xml --batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=/cache/.m2/repository"
+
+cache:
+  key: "maven3"
+  paths:
+    - /cache/.m2/repository
+
+build:
+  stage: build
+  script:
+    - mvn $MAVEN_CLI_OPTS package
+  only:
+    - merge_requests
+    - master
