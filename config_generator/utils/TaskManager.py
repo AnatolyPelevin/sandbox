@@ -276,7 +276,7 @@ class TaskManager:
         else:
             fields_dict.update(self.verifyFields(task["ATTRIBUTES"]["FIELDS"], source_schema, object_json))
 
-        if not bool(fields_dict):
+        if not fields_dict:
             logging.error(
                 "SkippedTask: {number} - fields from task are already in config".format(number=task["NUMBER"]))
             return False
