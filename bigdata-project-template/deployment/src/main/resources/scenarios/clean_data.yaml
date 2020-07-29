@@ -1,0 +1,52 @@
+- hosts:
+    - application_db
+  tasks:
+    - name: Create tmp dir
+      file:
+        path: "/tmp/{{ projectName }}-{{ app_version }}-db"
+        state: directory
+
+    - name: Render ETL DB script
+      template:
+        src: "{{ include_dir }}/db/drop_etl.sql.j2"
+        dest: "/tmp/{{ projectName }}-{{ app_version }}-db/drop_etl.sql"
+
+    - name: Drop ETL DB and tables
+      shell: "PGPASSWORD={{ APPS_DB_PASSWORD }} psql -h {{ APPS_DB_HOST }} -p {{ APPS_DB_PORT }} -d {{ APPS_DB_NAME }} -U {{ APPS_DB_USER }} -w -v ON_ERROR_STOP=1 -f /tmp/{{ projectName }}-{{ app_version }}-db/drop_etl.sql"
+
+- hosts:
+    - cloudera_manager
+  become: yes
+  become_user: "{{ appUser }}"
+  tasks:
+    - name: Create tmp dir
+      file:
+        path: "/tmp/{{ projectName }}-{{ app_version }}-hive"
+        state: directory
+        mode: 0775
+
+    - name: Render Hive script
+      template:
+        src: "{{ include_dir }}/hive/drop_db.ql.j2"
+        dest: "/tmp/{{ projectName }}-{{ app_version }}-hive/drop_db.ql"
+
+    - name: Execute drop db hive script
+      shell: "beeline -u '{{ beelineUrl }}' -f /tmp/{{ projectName }}-{{ app_version }}-hive/drop_db.ql > /tmp/{{ projectName }}-{{ app_version }}-hive/drop_db.log 2>&1"
+
+    - name: Create vertica tmp dir
+      file:
+        path: "/tmp/{{ projectName }}-{{ app_version }}-db"
+        state: directory
+
+    - name: Render Vertica DB script
+      template:
+        src: "{{ include_dir }}/db/drop_vertica.sql.j2"
+        dest: "/tmp/{{ projectName }}-{{ app_version }}-db/drop_vertica.sql"
+
+    - name: Execute drop Vertica DB
+      shell: "vsql -h {{ INTRANET_VERTICA_HOST }} -p {{ INTRANET_VERTICA_PORT }} -d {{ INTRANET_VERTICA_DB }} -U {{ TEMPLATE_VERTICA_USER_NAME }} -w {{ TEMPLATE_VERTICA_USER_PASSWORD }} -f /tmp/{{ projectName }}-{{ app_version }}-db/drop_vertica.sql -e > /tmp/{{ projectName }}-{{ app_version }}-db/drop_vertica.log 2>&1"
+
+    - name: Delete HDFS data
+      hdfs_file:
+        name: "{{ hdfsProjectDirRoot }}/out-data"
+        state: absent

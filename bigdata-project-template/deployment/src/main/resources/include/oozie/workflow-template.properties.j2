@@ -1,0 +1,50 @@
+oozie.use.system.libpath=true
+oozie.action.sharelib.for.java=spark
+oozie.coord.application.path={{ hdfsProjectDirRoot }}/workspace/oozie-apps/workflow-template
+oozie.libpath={{ hdfsProjectDirRoot }}/workspace/oozie-apps/lib
+user.name={{ appUser }}
+
+oozieAppsNameSuffix={{ oozieAppsNameSuffix }}
+wfEndTimeUTC=2030-01-01T00:00Z
+wfFrequencyMin={{ wfFrequency }}
+wfMaxDuration=120
+
+workflowPath={{ hdfsProjectDirRoot }}/workspace/oozie-apps/workflow-template
+
+hiveDBName={{ hiveDBName }}
+
+hcatMetastoreUri={{ HCAT_METASTORE_URI }}
+kerberosPrincipal={{ HIVE_KERBEROS_PRINCIPAL }}
+
+jobTracker={{ JOBTRACKER }}
+nameNode=hdfs://{{ NAMENODE }}
+
+verticaUrl=jdbc:vertica://{{ INTRANET_VERTICA_HOST }}:{{ INTRANET_VERTICA_PORT }}/{{ INTRANET_VERTICA_DB }}
+verticaUser={{ TEMPLATE_VERTICA_USER_NAME }}
+verticaPassword={{ TEMPLATE_VERTICA_USER_PASSWORD }}
+verticaDBName={{ verticaDBName }}
+maxVerticaThreads={{ maxVerticaThreads }}
+verticaResultBufferSize={{ BIGDATA_PROJECT_TEMPLATE_MEMORY['vertica_result_buffer_size'] }}
+
+etlDb = {{ etlDb }}
+etlDbUrl = {{ etlDbUrl }}
+etlDbUser = {{ APPS_DB_USER }}
+etlDbPassword = {{ APPS_DB_PASSWORD }}
+
+oozieLibpath={{ hdfsProjectDirRoot }}/workspace/oozie-apps/lib
+appJar=bigdata-project-template-app-{{ app_version }}.jar
+
+sparkDriverMemory={{ BIGDATA_PROJECT_TEMPLATE_MEMORY['driver_memory'] }}
+sparkDriverMemoryOverhead={{ BIGDATA_PROJECT_TEMPLATE_MEMORY['driver_memory_overhead'] }}
+sparkDriverMaxDirectMemorySize={{ BIGDATA_PROJECT_TEMPLATE_MEMORY['driver_max_direct_memory_size'] }}
+sparkExecutors={{ BIGDATA_PROJECT_TEMPLATE_MEMORY['executors'] }}
+sparkExecutorMemory={{ BIGDATA_PROJECT_TEMPLATE_MEMORY['executor_memory'] }}
+sparkExecutorMemoryOverhead={{ BIGDATA_PROJECT_TEMPLATE_MEMORY['executor_memory_overhead'] }}
+sparkExecutorMaxDirectMemorySize={{ BIGDATA_PROJECT_TEMPLATE_MEMORY['executor_max_direct_memory_size'] }}
+sparkKryoserializerBufferMax={{ BIGDATA_PROJECT_TEMPLATE_MEMORY['kryoserializer_buffer_max'] }}
+sparkEventlogDir={{ sparkEventlogDir }}
+
+impalaInvalidateServiceUrlWithSchema={{ IMPALA_INVALIDATE_SERVICE_URL }}/invalidate/{{ hiveDBName }}
+
+outDataPath={{ hdfsProjectDirRoot }}/out-data
+

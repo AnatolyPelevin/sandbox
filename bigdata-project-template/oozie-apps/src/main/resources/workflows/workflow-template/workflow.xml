@@ -1,0 +1,73 @@
+<workflow-app name="workflow-template_${oozieAppsNameSuffix}" xmlns="uri:oozie:workflow:0.5">
+    <credentials>
+        <credential name="hcat" type="hcat">
+            <property>
+                <name>hcat.metastore.uri</name>
+                <value>${hcatMetastoreUri}</value>
+            </property>
+            <property>
+                <name>hcat.metastore.principal</name>
+                <value>${kerberosPrincipal}</value>
+            </property>
+        </credential>
+    </credentials>
+
+    <start to="run_spark_template"/>
+
+    <action name="run_spark_template" cred="hcat">
+        <spark xmlns="uri:oozie:spark-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <master>yarn</master>
+            <mode>cluster</mode>
+            <name>BigData_Project_Spark_Template_${oozieAppsNameSuffix}</name>
+            <class>com.ringcentral.analytics.template.BigDataProjectSparkTemplate</class>
+            <jar>${oozieLibpath}/${appJar}</jar>
+            <spark-opts>
+                --driver-memory ${sparkDriverMemory}M
+                --executor-memory ${sparkExecutorMemory}M
+                --conf spark.dynamicAllocation.maxExecutors=${sparkExecutors}
+                --conf spark.yarn.driver.memoryOverhead=${sparkDriverMemoryOverhead}
+                --conf spark.yarn.executor.memoryOverhead=${sparkExecutorMemoryOverhead}
+                --conf "spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=${sparkDriverMaxDirectMemorySize}M"
+                --conf "spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=${sparkExecutorMaxDirectMemorySize}M"
+                --conf spark.eventLog.dir=${nameNode}${sparkEventlogDir}
+                --conf spark.eventLog.enabled=true
+                --conf spark.yarn.maxAppAttempts=1
+                --conf spark.task.maxFailures=1
+                --conf spark.blacklist.enabled=false
+                --conf spark.kryoserializer.buffer.max=${sparkKryoserializerBufferMax}m
+                --conf spark.sql.autoBroadcastJoinThreshold=-1
+                --files ${oozieLibpath}/xml/hive-site.xml
+            </spark-opts>
+
+            <arg>--dt=${dt}</arg>
+            <arg>--wf-id=${wf:id()}</arg>
+
+            <arg>--hive-database=${hiveDBName}</arg>
+            <arg>--hive-database-location=${outDataPath}</arg>
+
+            <arg>--vertica-url=${verticaUrl}</arg>
+            <arg>--vertica-database=${verticaDBName}</arg>
+            <arg>--vertica-user=${verticaUser}</arg>
+            <arg>--vertica-password=${verticaPassword}</arg>
+            <arg>--max-vertica-threads=${maxVerticaThreads}</arg>
+            <arg>--result-buffer-size=${verticaResultBufferSize}</arg>
+
+            <arg>--etldb-connection-string=${etlDbUrl}</arg>
+            <arg>--etldb-database=${etlDb}</arg>
+            <arg>--etldb-user=${etlDbUser}</arg>
+            <arg>--etldb-password=${etlDbPassword}</arg>
+
+            <arg>--impala-invalidate-service-url=${impalaInvalidateServiceUrlWithSchema}</arg>
+        </spark>
+        <ok to="end"/>
+        <error to="kill"/>
+    </action>
+
+    <kill name="kill">
+        <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+
+    <end name="end"/>
+</workflow-app>

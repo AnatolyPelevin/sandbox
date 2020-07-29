@@ -1,0 +1,80 @@
+- hosts:
+    - cloudera_manager
+  become: yes
+  become_user: "{{ appUser }}"
+  tasks:
+    - name: Create project dirs on hdfs
+      with_items:
+        - "out-data"
+        - "tmp"
+        - "workspace/oozie-apps"
+      hdfs_file:
+        path: "{{ hdfsProjectDirRoot }}/{{ item }}"
+        mode: 775
+        owner: "{{ appUser }}"
+        state: directory
+
+    - name: Create tmp dir
+      file:
+        path: "/tmp/{{ projectName }}-{{ app_version }}-db"
+        state: directory
+
+    - name: Render Vertica DB script
+      template:
+        src: "{{ include_dir }}/db/init_vertica.sql.j2"
+        dest: "/tmp/{{ projectName }}-{{ app_version }}-db/init_vertica.sql"
+
+    - name: Execute create Vertica DB
+      shell: "vsql -h {{ INTRANET_VERTICA_HOST }} -p {{ INTRANET_VERTICA_PORT }} -d {{ INTRANET_VERTICA_DB }} -U {{ TEMPLATE_VERTICA_USER_NAME }} -w {{ TEMPLATE_VERTICA_USER_PASSWORD }} -f /tmp/{{ projectName }}-{{ app_version }}-db/init_vertica.sql -e > /tmp/{{ projectName }}-{{ app_version }}-db/init_vertica.log 2>&1"
+
+    - name: Create tmp dir
+      file:
+        path: "/tmp/{{ projectName }}-{{ app_version }}-hive"
+        state: directory
+        mode: 0775
+
+    - name: Render Hive script
+      template:
+        src: "{{ include_dir }}/hive/init_db.ql.j2"
+        dest: "/tmp/{{ projectName }}-{{ app_version }}-hive/init_db.ql"
+
+    - name: Execute init db hive script
+      shell: "beeline -u '{{ beelineUrl }}' -f /tmp/{{ projectName }}-{{ app_version }}-hive/init_db.ql > /tmp/{{ projectName }}-{{ app_version }}-hive/init_db.log 2>&1"
+
+    - name: Create tmp dir
+      file:
+        path: "/tmp/{{ projectName }}-{{ app_version }}"
+        state: directory
+
+    - name: Put version file to the remote server
+      template:
+        src: "{{ include_dir }}/version.txt"
+        dest: "/tmp/{{ projectName }}-{{ app_version }}/version.txt"
+
+    - name: Put version file to hdfs
+      hdfs_put:
+        src: "/tmp/{{ projectName }}-{{ app_version }}/version.txt"
+        dest: "{{ hdfsProjectDirRoot }}/workspace/version.txt"
+
+- hosts:
+    - application_db
+  tasks:
+    - name: Create tmp dir
+      file:
+        path: "/tmp/{{ projectName }}-{{ app_version }}-db"
+        state: directory
+
+    - name: Render ETL DB script
+      template:
+        src: "{{ include_dir }}/db/init_etl.sql.j2"
+        dest: "/tmp/{{ projectName }}-{{ app_version }}-db/init_etl.sql"
+
+    - name: Create ETL DB and tables
+      shell: "PGPASSWORD={{ APPS_DB_PASSWORD }} psql -h {{ APPS_DB_HOST }} -p {{ APPS_DB_PORT }} -d {{ APPS_DB_NAME }} -U {{ APPS_DB_USER }} -w -v ON_ERROR_STOP=1 -f /tmp/{{ projectName }}-{{ app_version }}-db/init_etl.sql"
+
+- hosts:
+    - cloudera_manager
+  become: yes
+  become_user: "{{ appUser }}"
+  tasks:
+    - include: "{{ include_dir }}/deploy_oozie_coordinators.yaml"
