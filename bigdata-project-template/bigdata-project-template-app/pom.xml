@@ -28,21 +28,6 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>${alchim31.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <args>
-                        <arg>-language:implicitConversions</arg>
-                        <arg>-language:higherKinds</arg>
-                    </args>
-                </configuration>
             </plugin>
 
             <plugin>
