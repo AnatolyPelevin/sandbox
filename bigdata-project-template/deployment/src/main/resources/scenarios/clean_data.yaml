@@ -31,7 +31,7 @@
         dest: "/tmp/{{ projectName }}-{{ app_version }}-hive/drop_db.ql"
 
     - name: Execute drop db hive script
-      shell: "hive -f /tmp/{{ projectName }}-{{ app_version }}-hive/drop_db.ql > /tmp/{{ projectName }}-{{ app_version }}-hive/drop_db.log 2>&1"
+      shell: "beeline -u '{{ beelineUrl }}' -f /tmp/{{ projectName }}-{{ app_version }}-hive/drop_db.ql > /tmp/{{ projectName }}-{{ app_version }}-hive/drop_db.log 2>&1"
 
     - name: Create vertica tmp dir
       file:

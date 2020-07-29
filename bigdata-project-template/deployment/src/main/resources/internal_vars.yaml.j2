@@ -5,11 +5,12 @@ common:
     namespace: bigdata_project_template_{{ env_type }}{{ "_" + git_branch|replace('-', '_') if git_branch != "" else "" }}
     projectName: bigdata_project_template
     hdfsProjectDirRoot: hdfs://{{ NAMENODE }}/envs/{{ env_type }}/bigdata_project_template{{ "/" + git_branch if git_branch != "" else "" }}
-    oozieAppsNameSuffix: {{ env_type }}{{ "_" + git_branch if git_branch != "" else "" }}
+    oozieAppsNameSuffix: {{ env_type }}{{ "_" + git_branch|replace('-', '_')|lower if git_branch != "" else "" }}
     hiveDBName: bigdata_project_template_{{ env_type }}{{ "_" + git_branch|lower|replace("-","_") if git_branch != "" else "" }}
     verticaDBName: bigdata_project_template_{{ env_type }}{{ "_" + git_branch|lower|replace("-","_") if git_branch != "" else "" }}
     etlDbUrl: jdbc:postgresql://{{ APPS_DB_HOST }}:{{ APPS_DB_PORT }}/{{ APPS_DB_NAME }}?currentSchema=bigdata_project_template_{{ env_type|upper }}{{ "_" + git_branch|upper|replace("-","_") if git_branch != "" else "" }}&zeroDateTimeBehavior=convertToNull
     etlDb: bigdata_project_template_{{ env_type|upper }}{{ "_" + git_branch|upper|replace("-","_") if git_branch != "" else "" }}
+    beelineUrl: jdbc:hive2://{{ HIVE_SERVER2_HOST }}:10000/default;principal={{ HIVE_KERBEROS_PRINCIPAL }}
     wfFrequency: 1 1 * *
     maxVerticaThreads: 15
     sparkEventlogDir: /user/spark/applicationHistory

@@ -39,7 +39,7 @@
         dest: "/tmp/{{ projectName }}-{{ app_version }}-hive/init_db.ql"
 
     - name: Execute init db hive script
-      shell: "hive -f /tmp/{{ projectName }}-{{ app_version }}-hive/init_db.ql > /tmp/{{ projectName }}-{{ app_version }}-hive/init_db.log 2>&1"
+      shell: "beeline -u '{{ beelineUrl }}' -f /tmp/{{ projectName }}-{{ app_version }}-hive/init_db.ql > /tmp/{{ projectName }}-{{ app_version }}-hive/init_db.log 2>&1"
 
     - name: Create tmp dir
       file:

@@ -13,7 +13,7 @@
     <parent>
         <groupId>com.ringcentral.analytics</groupId>
         <artifactId>parent-pom</artifactId>
-        <version>1.8.9</version>
+        <version>1.8.14</version>
     </parent>
 
     <modules>
@@ -24,7 +24,8 @@
 
     <properties>
         <scalikejdbc.version>2.5.2</scalikejdbc.version>
-        <common.etl.utils.version>1.9.4</common.etl.utils.version>
+        <common.etl.utils.version>1.9.7</common.etl.utils.version>
+        <alchim31.plugin.version>3.2.2</alchim31.plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -52,17 +53,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>com.github.scopt</groupId>
-                <artifactId>scopt_${spark.scala.binary.version}</artifactId>
-                <version>3.7.0</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.scala-lang</groupId>
-                        <artifactId>scala-library</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -71,30 +61,6 @@
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <args>
-                        <arg>-language:implicitConversions</arg>
-                        <arg>-language:higherKinds</arg>
-                    </args>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
