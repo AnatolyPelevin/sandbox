@@ -25,7 +25,6 @@
     <properties>
         <scalikejdbc.version>2.5.2</scalikejdbc.version>
         <common.etl.utils.version>1.9.7</common.etl.utils.version>
-        <alchim31.plugin.version>3.2.2</alchim31.plugin.version>
     </properties>
 
     <dependencyManagement>
