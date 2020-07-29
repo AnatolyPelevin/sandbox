@@ -259,14 +259,14 @@ class TaskManager:
             if verification_response:
                 object_json = config_builder.createObjectFromTemplate(task)
             else:
-                logging.error("SkippedTask: {number} - wrong task config".format(number=task["NUMBER"]))
+                logging.error("SkippedTask: '{id}' - wrong task config".format(id=task["IDENTIFIER"]))
                 return False
 
         reader = self.defineReader(task)
 
         source_schema = reader.getSchema(task["SOURCE"])
         if not source_schema:
-            logging.error("SkippedTask: {number} - source schema not found".format(number=task["NUMBER"]))
+            logging.error("SkippedTask: '{id}' - source schema not found".format(id=task["IDENTIFIER"]))
             return False
 
         fields_dict = {}
@@ -278,7 +278,7 @@ class TaskManager:
 
         if not fields_dict:
             logging.error(
-                "SkippedTask: {number} - fields from task are already in config".format(number=task["NUMBER"]))
+                "SkippedTask: '{id}' - fields from task are already in config".format(id=task["IDENTIFIER"]))
             return False
 
         fields_template = \
@@ -301,7 +301,7 @@ class TaskManager:
             Utils.writeConfig(full_path, object_json)
         else:
             logging.error(
-                "NoChanges: {number} - config has not changed".format(number=task["NUMBER"]))
+                "NoChanges: '{id}' - config has not changed".format(id=task["IDENTIFIER"]))
 
         return True
 
@@ -311,7 +311,7 @@ class TaskManager:
             object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
         else:
-            logging.error("SkippedTask: {number} - object config not found".format(number=task["NUMBER"]))
+            logging.error("SkippedTask: '{id}' - object config not found".format(id=task["IDENTIFIER"]))
             return False
 
         reader = self.defineReader(task)
