@@ -1,0 +1,119 @@
+[
+    {
+        "IDENTIFIER": 1,
+        "TASK": "ADD FIELDS",
+        "CONFIG": "erd-configs",
+        "OBJECT": "abt_accountstatuses",
+        "SOURCE_DB": "ORACLE",
+        "ENV": "ATT",
+        "ATTRIBUTES": {
+            "FIELDS": {
+                "accountstatusid": "accountstatusid_dest"
+            }
+        }
+    },
+    {
+        "IDENTIFIER": 2,
+        "TASK": "REMOVE FIELDS",
+        "CONFIG": "erd-configs",
+        "OBJECT": "abt_accountstatuses",
+        "ENV": "ATT",
+        "ATTRIBUTES": {
+            "FIELDS": {
+                "accountstatusid": null
+            }
+        }
+    },
+    {
+        "IDENTIFIER": 3,
+        "TASK": "CHANGE OBJECT CONFIG",
+        "CONFIG": "erd-configs",
+        "OBJECT": "abt_accountstatuses",
+        "ENV": "RC",
+        "ATTRIBUTES": {
+            "PRIORITY": 1
+        }
+    },
+    {
+        "IDENTIFIER": 4,
+        "TASK": "REMOVE OBJECT",
+        "CONFIG": "erd-configs",
+        "OBJECT": "abt_accountstatuses",
+        "ENV": "ATT",
+        "ATTRIBUTES": {}
+    },
+    {
+        "IDENTIFIER": 5,
+        "TASK": "CHECK DATATYPE CAST",
+        "CONFIG": "erd-configs",
+        "OBJECT": "abt_accountstatuses",
+        "SOURCE_DB": "ORACLE",
+        "ENV": "RC",
+        "ATTRIBUTES": {
+        }
+    },
+    {
+        "IDENTIFIER": 6,
+        "TASK": "CHECK DATATYPE CAST",
+        "CONFIG": "sfdc-config",
+        "OBJECT": "order",
+        "SOURCE_DB": "HEROKU",
+        "ENV": "RC",
+        "ATTRIBUTES": {
+        }
+    },
+    {
+        "IDENTIFIER": 7,
+        "TASK": "CHECK DATATYPE CAST",
+        "CONFIG": "sfdc-config",
+        "OBJECT": "lead",
+        "SOURCE_DB": "SALESFORCE",
+        "ENV": "RC",
+        "ATTRIBUTES": {
+        }
+    },
+    {
+        "IDENTIFIER": 8,
+        "TASK": "ADD FIELDS",
+        "CONFIG": "sfdc-config",
+        "OBJECT": "lead_qualification__c",
+        "SOURCE": "lead_qualification__c",
+        "SOURCE_DB": "HEROKU",
+        "ENV": "RC",
+        "ATTRIBUTES": {
+            "HIVE_TABLE_NAME": "lead_qualification__c",
+            "TABLE_QUERY": "salesforce.lead_qualification__c",
+            "DESTINATION_TABLE_NAME": "lead_qualification__c",
+            "FIELDS": {
+                "ALL": true
+            }
+        }
+    },
+    {
+        "IDENTIFIER": 9,
+        "TASK": "ADD FIELDS",
+        "CONFIG": "erd-configs",
+        "OBJECT": "usersconlicenseslog",
+        "SOURCE": "usersconlicenseslog",
+        "SOURCE_DB": "ORACLE",
+        "ENV": "RC",
+        "ATTRIBUTES": {
+            "HIVE_TABLE_NAME": "usersconlicenseslog",
+            "TABLE_QUERY": "usersconlicenseslog",
+            "DESTINATION_TABLE_NAME": "usersconlicenseslog",
+            "FIELDS": {
+                "ALL": true
+            }
+        }
+    },
+    {
+        "IDENTIFIER": 10,
+        "TASK": "CHECK SALESFORCE API NAME",
+        "CONFIG": "sfdc-config",
+        "OBJECT": "lead_qualification__c",
+        "SOURCE_DB": "SALESFORCE",
+        "ENV": "RC",
+        "ATTRIBUTES": {
+        }
+    }
+]
