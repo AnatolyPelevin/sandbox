@@ -72,11 +72,11 @@ if __name__ == '__main__':
 
     if arguments.etcd_file:
         etcd_json = json.load(arguments.etcd_file)
-        for item in etcd_json.keys():
+        for item in etcd_json:
             config[item] = etcd_json[item]
     else:
         etcd = ETCD('stage')
-        for item in config.keys():
+        for item in config:
             config[item] = etcd.get_var(item)
 
     config["user"] = arguments.user

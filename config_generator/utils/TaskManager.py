@@ -35,10 +35,7 @@ class TaskManager:
             "SALESFORCE": SalesForceReader,
             "HEROKU": HerokuReader
         }
-        if source_name in source_dict.keys():
-            return source_dict[source_name](self.config)
-        else:
-            raise NotImplementedError
+        return source_dict[source_name](self.config)
 
     def getMaxColumnOrder(self, object_json):
         column_orders = [item['COLUMN_ORDER'] for item in object_json['FIELDS']]
@@ -76,7 +73,7 @@ class TaskManager:
         return result
 
     def updateTask(self, task, object_json):
-        if "SOURCE" not in task.keys():
+        if "SOURCE" not in task:
             if len(object_json["TABLE_QUERY"].split(".")) > 1:
                 task["SOURCE"] = object_json["TABLE_QUERY"].split(".")[1]
             else:
@@ -87,7 +84,7 @@ class TaskManager:
         return task
 
     def getAllFields(self, source_schema):
-        result = {item: None for item in source_schema.keys()}
+        result = {key: None for key in source_schema}
         return result
 
     def process(self, tasks):
@@ -132,7 +129,7 @@ class TaskManager:
         logging.info("Start task with id: '{id}'".format(id=task["IDENTIFIER"]))
 
         fields_dict = task["ATTRIBUTES"]["FIELDS"]
-        for field in fields_dict.keys():
+        for field in fields_dict:
             order = [id for id, item in enumerate(object_json["FIELDS"]) if item["HIVE_NAME"] == field][0]
             if not object_json["FIELDS"][order]["IS_NULL"]:
                 object_json["FIELDS"][order]["IS_NULL"] = True
@@ -157,9 +154,9 @@ class TaskManager:
             logging.error("SkippedTask: '{id}' - object config not found".format(id=task["IDENTIFIER"]))
             return False
 
-        for item in task["ATTRIBUTES"].keys():
-            if object_json[item] != task["ATTRIBUTES"][item]:
-                object_json[item] = task["ATTRIBUTES"][item]
+        for attribute in task["ATTRIBUTES"]:
+            if object_json[attribute] != task["ATTRIBUTES"][attribute]:
+                object_json[attribute] = task["ATTRIBUTES"][attribute]
                 config_is_changed = True
 
         if config_is_changed:
@@ -207,28 +204,28 @@ class TaskManager:
         object_fields_names = {item["HIVE_NAME"]: item["DATA_TYPE"] for item in object_json["FIELDS"]}
 
         flag = True
-        for item in object_fields_names.keys():
+        for field in object_fields_names:
             schema_datatype = None
             try:
-                schema_datatype = source_schema[item]["type"]
+                schema_datatype = source_schema[field]["type"]
             except KeyError:
                 logging.warning(
                     "FieldNotFound: Field '{item}' for source schema of object '{object}' at {source_db} not found".format(
-                        item=item,
+                        item=field,
                         object=task["OBJECT"],
                         source_db=task["SOURCE_DB"]
                     )
                 )
                 continue
-            config_type = object_fields_names[item]
-            generated_data_type = config_builder.getDataType(reader, None, item, source_schema, None)
+            config_type = object_fields_names[field]
+            generated_data_type = config_builder.getDataType(reader, None, field, source_schema, None)
             if config_type != generated_data_type:
                 flag = False
                 logging.warning(
                     "DataTypeMisCast: Config: '{config}', Object: '{object}', Field: '{item}' - (config_type, generated_type, schema_type) = ({config_type}, {generated_data_type}, {schema_datatype})".format(
                         config=task["CONFIG"],
                         object=task["OBJECT"],
-                        item=item,
+                        item=field,
                         config_type=config_type,
                         generated_data_type=generated_data_type,
                         schema_datatype=schema_datatype
@@ -271,7 +268,7 @@ class TaskManager:
 
         fields_dict = {}
 
-        if "ALL" in task["ATTRIBUTES"]["FIELDS"].keys() and task["ATTRIBUTES"]["FIELDS"]["ALL"]:
+        if "ALL" in task["ATTRIBUTES"]["FIELDS"] and task["ATTRIBUTES"]["FIELDS"]["ALL"]:
             fields_dict.update(self.verifyFields(self.getAllFields(source_schema), source_schema, object_json))
         else:
             fields_dict.update(self.verifyFields(task["ATTRIBUTES"]["FIELDS"], source_schema, object_json))
@@ -284,13 +281,13 @@ class TaskManager:
         fields_template = \
             Utils.readTemplate(self.config["pwd"], task["CONFIG"].split("-")[0].lower())["FIELDS"][0]
         column_order = self.getMaxColumnOrder(object_json)
-        for item in fields_dict.keys():
+        for field in fields_dict:
             column_order += 1
             fields_template_copy = copy.deepcopy(fields_template)
             for field_name in fields_template_copy:
                 fields_template_copy[field_name] = config_builder.getFieldContent(reader,
                                                                                   task,
-                                                                                  item,
+                                                                                  field,
                                                                                   field_name,
                                                                                   source_schema,
                                                                                   column_order)
@@ -318,11 +315,11 @@ class TaskManager:
         source_schema = reader.getSchema(task["SOURCE"])
 
         flag = True
-        for item in object_json["FIELDS"]:
-            if item["MISC"]["salesforceApiName"] not in source_schema.keys():
+        for field in object_json["FIELDS"]:
+            if field["MISC"]["salesforceApiName"] not in source_schema:
                 logging.error(
                     "WrongSalesForceApiName: SalesForceApiName for field '{hive_name}' of object '{hive_table_name}' is wrong".format(
-                        hive_name=item["HIVE_NAME"],
+                        hive_name=field["HIVE_NAME"],
                         hive_table_name=object_json["HIVE_TABLE_NAME"]
                     )
                 )
