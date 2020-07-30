@@ -18,76 +18,40 @@ case class FieldStruct(name: String,
   val verticaTypeShort: String = ("[A-z]*".r findPrefixOf verticaType).getOrElse(verticaType).toLowerCase.trim
 }
 
-object FieldNames {
-  val id = "id"
-  val catalogId = "catalogid"
-  val version = "version"
-  val ngbsAccountId = "ngbs_account_id"
-  val added = "added"
-  val description = "description"
-  val productLine = "product_line"
-  val product = "product"
-  val accountid = "accountid"
-  val renewalDay = "renewal_day"
-  val gbcc = "gbcc"
-  val billingStartDate = "billing_start_date"
-  val nextBillingDate = "next_billing_date"
-  val status = "status"
-  val props = "props"
-  val masterDuration = "master_duration"
-  val previousBillingDate = "previous_billing_date"
-  val externalSystemId = "external_system_id"
-  val currency = "currency"
-  val offerType = "offer_type"
-  val durationUnit = "duration_unit"
-  val durationValue = "duration_value"
-  val targetCatalogid = "target_catalogid"
-  val targetVersion = "target_version"
-  val timezone = "timezone"
-  val mrr = "mrr"
-  val mrr1m = "mrr_1m"
-  val mrr12m = "mrr_12m"
-  val mrrDt = "mrr_dt"
-  val mrrUsd = "mrr_usd"
-  val mrrIncontact = "mrr_incontact"
-  val mrrIncontactDt = "mrr_incontact_dt"
-}
-
 val fieldSpec: Seq[FieldStruct] = {
-  import FieldNames._
   Seq(
-    FieldStruct(id, "bigint", "bigint"),
-    FieldStruct(catalogId, "string", "varchar(32)"),
-    FieldStruct(version, "string", "varchar(16)"),
-    FieldStruct(ngbsAccountId, "bigint", "bigint"),
-    FieldStruct(added, "timestamp", "timestamp"),
-    FieldStruct(description, "string", "varchar(1024)"),
-    FieldStruct(productLine, "string", "varchar(16)"),
-    FieldStruct(product, "string", "varchar(32)"),
-    FieldStruct(accountid, "string", "varchar(64)"),
-    FieldStruct(renewalDay, "bigint", "bigint"),
-    FieldStruct(gbcc, "bigint", "bigint"),
-    FieldStruct(billingStartDate, "timestamp", "timestamp"),
-    FieldStruct(nextBillingDate, "timestamp", "timestamp"),
-    FieldStruct(status, "bigint", "bigint"),
-    FieldStruct(props, "string", "varchar(1024)"),
-    FieldStruct(masterDuration, "bigint", "bigint"),
-    FieldStruct(previousBillingDate, "timestamp", "timestamp"),
-    FieldStruct(externalSystemId, "string", "varchar(32)"),
-    FieldStruct(currency, "string", "varchar(32)"),
-    FieldStruct(offerType, "bigint", "bigint"),
-    FieldStruct(durationUnit, "bigint", "bigint"),
-    FieldStruct(durationValue, "bigint", "bigint"),
-    FieldStruct(targetCatalogid, "string", "varchar(32)"),
-    FieldStruct(targetVersion, "string", "varchar(16)"),
-    FieldStruct(timezone, "string", "varchar(64)"),
-    FieldStruct(mrr, "double", "double precision"),
-    FieldStruct(mrr1m, "double", "double precision"),
-    FieldStruct(mrr12m, "double", "double precision"),
-    FieldStruct(mrrDt, "timestamp", "timestamp"),
-    FieldStruct(mrrUsd, "double", "double precision"),
-    FieldStruct(mrrIncontact, "double", "double precision"),
-    FieldStruct(mrrIncontactDt, "timestamp", "timestamp")
+    FieldStruct("id", "bigint", "bigint"),
+    FieldStruct("catalogid", "string", "varchar(32)"),
+    FieldStruct("version", "string", "varchar(16)"),
+    FieldStruct("ngbs_account_id", "bigint", "bigint"),
+    FieldStruct("added", "timestamp", "timestamp"),
+    FieldStruct("description", "string", "varchar(1024)"),
+    FieldStruct("product_line", "string", "varchar(16)"),
+    FieldStruct("product", "string", "varchar(32)"),
+    FieldStruct("accountid", "string", "varchar(64)"),
+    FieldStruct("renewal_day", "bigint", "bigint"),
+    FieldStruct("gbcc", "bigint", "bigint"),
+    FieldStruct("billing_start_date", "timestamp", "timestamp"),
+    FieldStruct("next_billing_date", "timestamp", "timestamp"),
+    FieldStruct("status", "bigint", "bigint"),
+    FieldStruct("props", "string", "varchar(1024)"),
+    FieldStruct("master_duration", "bigint", "bigint"),
+    FieldStruct("previous_billing_date", "timestamp", "timestamp"),
+    FieldStruct("external_system_id", "string", "varchar(32)"),
+    FieldStruct("currency", "string", "varchar(32)"),
+    FieldStruct("offer_type", "bigint", "bigint"),
+    FieldStruct("duration_unit", "bigint", "bigint"),
+    FieldStruct("duration_value", "bigint", "bigint"),
+    FieldStruct("target_catalogid", "string", "varchar(32)"),
+    FieldStruct("target_version", "string", "varchar(16)"),
+    FieldStruct("timezone", "string", "varchar(64)"),
+    FieldStruct("mrr", "double", "double precision"),
+    FieldStruct("mrr_1m", "double", "double precision"),
+    FieldStruct("mrr_12m", "double", "double precision"),
+    FieldStruct("mrr_dt", "timestamp", "timestamp"),
+    FieldStruct("mrr_usd", "double", "double precision"),
+    FieldStruct("mrr_incontact", "double", "double precision"),
+    FieldStruct("mrr_incontact_dt", "timestamp", "timestamp")
   )
 }
 
@@ -107,16 +71,13 @@ def createConnection(options: VerticaOptions): Connection = {
   conn
 }
 
-val spark = SparkSession.builder().appName("Ad-hoc migration for UMD, DATA-6052").enableHiveSupport().getOrCreate()
-
-val dt = LocalDate.of(2020, 6, 28)
-
 val args = spark.sqlContext.getConf("spark.driver.args").split(",")
 
 val verticaUrl = args(0)
 val verticaUser = args(1)
 val verticaPassword = args(2)
 val verticaDb = args(3)
+val dt = args(4)
 val verticaOptions: VerticaOptions = VerticaOptions(
   verticaUrl,
   verticaUser,
@@ -267,7 +228,7 @@ def saveDataIntoTable(dataFrame: DataFrame,
     val conn: Connection = createConnection(options)
     try {
       val pstmt = conn.prepareStatement(
-        generateInsertVerticaQuery(tableName, fields, options.verticaDb)
+        generateInsertVerticaQuery(tableName, fields, verticaDb)
       )
 
       addVerticaRowBatchToPstm(pstmt, rows, fields)
@@ -315,13 +276,13 @@ def saveIntoVertica(dataFrame: DataFrame): Unit = {
     fieldSpec,
     "umd6_accounts",
     tableNameSnapshotted,
-    dt)
+    LocalDate.parse(dt))
 }
 
 val queryHive =
   s"""SELECT ${getFieldNames(fieldSpec)}
-     |  FROM umd_production.umd6_accounts_snapshotted acc
-     | WHERE acc.dt = '2020-06-28'
+     |  FROM ${verticaDb}.umd6_accounts_snapshotted acc
+     | WHERE acc.dt = '$dt'
      |""".stripMargin
 val df = spark.sql(queryHive)
 
