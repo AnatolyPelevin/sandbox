@@ -12,14 +12,14 @@ LOG_FILE_NAME="DATA-6052-$(date +"%F-%T").log"
 touch $LOG_FILE_NAME
 
 spark-shell -i migration.scala \
-            --jars " hadoop fs -ls /envs/production/UMD/workspace/oozie-apps/lib/vertica-jdbc-7.1.2-0.jar" \
+            --jars "hdfs://nameservice1/envs/production/UMD/workspace/oozie-apps/lib/vertica-jdbc-7.1.2-0.jar" \
             --conf spark.driver.args="$VERTICA_URL,$VERTICA_USER,$VERTICA_PASSWORD,$VERTICA_DB,$DT" \
-            --conf spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=1536  \
-            --conf spark.executor.memoryOverhead=2048  \
-            --conf spark.executor.memory=2048  \
-            --conf spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=1536  \
-            --conf spark.driver.memoryOverhead=2048  \
-            --conf spark.driver.memory=2048  \
+            --conf spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=1536M  \
+            --conf spark.executor.memoryOverhead=2048M  \
+            --conf spark.executor.memory=2048M  \
+            --conf spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=1536M  \
+            --conf spark.driver.memoryOverhead=2048M  \
+            --conf spark.driver.memory=2048M  \
             --conf spark.dynamicAllocation.maxExecutors=8  \
             --conf spark.dynamicAllocation.enabled=true  \
             --conf spark.dynamicAllocation.initialExecutors=8  \
