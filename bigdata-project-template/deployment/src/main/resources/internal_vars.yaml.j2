@@ -2,7 +2,7 @@
 # git_branch (should be "" if release), env_type (dev, prod or release)
 
 common:
-    namespace: bigdata_project_template_{{ env_type }}{{ "_" + git_branch|replace('-', '_') if git_branch != "" else "" }}
+    namespace: bigdata_project_template_{{ env_type }}{{ "_" + git_branch|lower|replace('-', '_') if git_branch != "" else "" }}
     projectName: bigdata_project_template
     hdfsProjectDirRoot: hdfs://{{ NAMENODE }}/envs/{{ env_type }}/bigdata_project_template{{ "/" + git_branch if git_branch != "" else "" }}
     oozieAppsNameSuffix: {{ env_type }}{{ "_" + git_branch|replace('-', '_')|lower if git_branch != "" else "" }}
