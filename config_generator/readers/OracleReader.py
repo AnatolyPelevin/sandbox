@@ -48,6 +48,7 @@ class OracleReader(Reader):
             'TIMESTAMP(3) WITH LOCAL TIME ZONE': 'timestamp',
             'TIMESTAMP(6) WITH LOCAL TIME ZONE': 'timestamp',
             'TIMESTAMP(0) WITH LOCAL TIME ZONE': 'timestamp',
+            'CHAR': 'varchar',
             'VARCHAR2': 'varchar'
         }
         try:
