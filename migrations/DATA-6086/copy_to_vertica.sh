@@ -31,7 +31,7 @@ DTS=('2020-07-04' '2020-07-05' '2020-07-06' '2020-07-08' '2020-07-14' '2020-07-2
 
 for i in "${DTS[@]}"
 do
-spark-shell -i migration.scala \
+spark-shell -i copy_to_vertica.scala \
             --jars "hdfs://nameservice1/envs/production/UMD/workspace/oozie-apps/lib/vertica-jdbc-7.1.2-0.jar" \
             --conf spark.driver.args="$VERTICA_URL,$VERTICA_USER,$VERTICA_PASSWORD,$VERTICA_DB,$i,account_licenses_snapshotted" \
             --conf spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=1536M  \
@@ -52,7 +52,7 @@ DTS=('2020-07-04' '2020-07-05' '2020-07-06')
 
 for i in "${DTS[@]}"
 do
-spark-shell -i migration.scala \
+spark-shell -i copy_to_vertica.scala \
             --jars "hdfs://nameservice1/envs/production/UMD/workspace/oozie-apps/lib/vertica-jdbc-7.1.2-0.jar" \
             --conf spark.driver.args="$VERTICA_URL,$VERTICA_USER,$VERTICA_PASSWORD,$VERTICA_DB,$i,umd6_contract_licenses_snapshotted" \
             --conf spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=1536M  \

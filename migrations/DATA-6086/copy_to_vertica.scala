@@ -58,8 +58,7 @@ val accountLicensesFieldSpec: Seq[FieldStruct] = {
     FieldStruct("mrr", "double", "double precision"),
     FieldStruct("mrr_usd", "double", "double precision"),
     FieldStruct("package_version", "string", "varchar(256)"),
-    FieldStruct("exchange_rate", "decimal(30,15)", "decimal(30,15)"),
-    FieldStruct("enterprise_account_id", "string", "varchar(50)")
+    FieldStruct("exchange_rate", "decimal(30,15)", "decimal(30,15)")
   )
 }
 
@@ -131,18 +130,7 @@ val contractLicensesFieldSpec: Seq[FieldStruct] = {
     FieldStruct("sf_quote_createdbyname", "string", "varchar(484)"),
     FieldStruct("sf_quote_lastmodifieddate", "timestamp", "timestamp"),
     FieldStruct("sf_quote_lastmodifiedbyid", "string", "varchar(72)"),
-    FieldStruct("sf_quote_lastmodifiedbyname", "string", "varchar(484)"),
-    FieldStruct("attr_mrk_channel", "string", "varchar(512)"),
-    FieldStruct("attr_mrk_l2", "string", "varchar(512)"),
-    FieldStruct("attr_mrk_l3", "string", "varchar(512)"),
-    FieldStruct("attr_mrk_campaign", "string", "varchar(512)"),
-    FieldStruct("sf_account_industry", "string", "varchar(160)"),
-    FieldStruct("sf_quote_owner_email", "string", "varchar(512)"),
-    FieldStruct("brand", "string", "varchar(4096)"),
-    FieldStruct("edition", "string", "varchar(4096)"),
-    FieldStruct("offer_type", "string", "varchar(4096)"),
-    FieldStruct("exchange_rate", "decimal(30,15)", "decimal(30,15)"),
-    FieldStruct("enterprise_account_id", "string", "varchar(50)")
+    FieldStruct("sf_quote_lastmodifiedbyname", "string", "varchar(484)")
   )
 }
 
@@ -359,15 +347,13 @@ def saveInVertica(dataFrame: DataFrame,
   savePartitioned(dataFrame, fieldSpec, tableName, snapshottedTableName, umdSnapshottedStage, date)
 }
 
-def saveIntoVertica(dataFrame: DataFrame, fieldSpec: Seq[FieldStruct]): Unit = {
+def saveIntoVertica(dataFrame: DataFrame, fieldSpec: Seq[FieldStruct], tableName: String): Unit = {
   val repartitionedDataFrame = dataFrame.coalesce(4)
-
-    val tableNameSnapshotted: String = "umd6_accounts_snapshotted"
 
   saveInVertica(repartitionedDataFrame,
     fieldSpec,
-    "umd6_accounts",
-    tableNameSnapshotted,
+    tableName,
+    tableName,
     LocalDate.parse(dt))
 }
 
@@ -384,6 +370,6 @@ val queryHive =
      |""".stripMargin
 val df = spark.sql(queryHive)
 
-saveIntoVertica(df, fieldSpec)
+saveIntoVertica(df, fieldSpec, tableName)
 
-exit()
+System.exit(0)
