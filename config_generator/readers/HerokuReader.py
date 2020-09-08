@@ -32,7 +32,7 @@ class HerokuReader(Reader):
                       FROM information_schema.columns 
                      WHERE table_schema = 'salesforce' 
                        AND table_name   = '{obj_name}';
-                """.format(obj_name=object_name.lower())
+                """.format(obj_name=object_name.lower().replace('\"', ""))
 
         logging.info("Source schema query: {query}".format(query=query))
 

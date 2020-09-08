@@ -1,0 +1,33 @@
+{
+    "HIVE_TABLE_NAME": null,
+    "TABLE_QUERY": null,
+    "DESTINATION_TABLE_NAME": null,
+    "IS_PARTITIONED": true,
+    "PRIORITY": 10000,
+    "ENABLED": true,
+    "INGESTION_TYPE": null,
+    "MISC": {
+        "chunkedExport": {
+            "chunkByColumn": "id",
+            "numberOfChunks": 20
+        },
+        "addInsertTimestamp": false,
+        "rotateOldPartitions": false,
+        "makeTimestampsImpalaCompatible": false,
+        "onChangeExport": false
+    },
+    "FIELDS": [
+        {
+            "HIVE_NAME": null,
+            "SOURCE_NAME": null,
+            "DESTINATION_NAME": null,
+            "DATA_TYPE": null,
+            "COLUMN_ORDER": 1,
+            "IS_NULL": false,
+            "INGESTION_TYPE": null,
+            "MISC": {
+                "salesforceApiName": null
+            }
+        }
+    ]
+}
