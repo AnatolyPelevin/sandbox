@@ -1,11 +1,17 @@
+import logging
+
+logging.basicConfig(format='%(asctime)s | %(levelname)s | %(message)s',
+                    datefmt='%y-%m-%d %H:%M',
+                    filename='config_generator.log',
+                    filemode='w',
+                    level=logging.INFO)
 import json
 import argparse
 from utils.TaskManager import TaskManager
 from utils.ETCD import ETCD
-import logging
 
 if __name__ == '__main__':
-    logging.info("Application started")
+    logging.info("Application started\n")
     parser = argparse.ArgumentParser()
     parser.add_argument('-u',
                         '--user',
@@ -68,8 +74,6 @@ if __name__ == '__main__':
               "SFDC_HEROKU_POSTGRES_PASSWORD": None,
               }
 
-    etcd = ETCD('stage')
-
     if arguments.etcd_file:
         etcd_json = json.load(arguments.etcd_file)
         for item in etcd_json:
@@ -88,4 +92,4 @@ if __name__ == '__main__':
 
     taskManager = TaskManager(config)
     taskManager.process(tasks)
-    logging.info("Application finished")
+    logging.info("Application finished\n")

@@ -16,7 +16,7 @@ class TaskManager:
                  config):
         self.config = config
 
-    def defineTask(self, task, full_path):
+    def defineTask(self, task):
         task_name = task["TASK"]
         tasks_dict = {
             "ADD FIELDS": self.addFields,
@@ -24,9 +24,10 @@ class TaskManager:
             "CHANGE OBJECT CONFIG": self.changeConfig,
             "REMOVE OBJECT": self.removeObject,
             "CHECK DATATYPE CAST": self.checkDataCast,
-            "CHECK SALESFORCE API NAME": self.checkSalesForceApiName
+            "CHECK SALESFORCE API NAME": self.checkSalesForceApiName,
+            "CREATE CONFIG REPORT": self.createConfigReport
         }
-        return tasks_dict[task_name](task, full_path)
+        return tasks_dict[task_name](task)
 
     def defineReader(self, task):
         source_name = task["SOURCE_DB"]
@@ -62,13 +63,26 @@ class TaskManager:
             if field_name in source_schema:
                 checked_fields_dict[field_name] = fields_dict[field_name]
             else:
-                logging.error(
-                    "FieldNotFound:No field '{item}' for object '{hive_table_name}' at source".format(item=field_name,
-                                                                                                      hive_table_name=
-                                                                                                      object_json[
-                                                                                                          "HIVE_TABLE_NAME"]
-                                                                                                      )
-                )
+                similar_names = Utils.find_field(source_schema, field_name)
+                if similar_names:
+                    logging.warning(
+                        "FieldNotFound: No field '{item}' for object '{hive_table_name}' at source. Maybe you need some of this fields: {similar_fields_name}".format(
+                            item=field_name,
+                            hive_table_name=
+                            object_json[
+                                "HIVE_TABLE_NAME"],
+                            similar_fields_name=similar_names
+                        )
+                    )
+                else:
+                    logging.error(
+                        "FieldNotFound:No field '{item}' for object '{hive_table_name}' at source".format(
+                            item=field_name,
+                            hive_table_name=
+                            object_json[
+                                "HIVE_TABLE_NAME"]
+                        )
+                    )
         result = self.check_duplicates(object_json, checked_fields_dict)
         return result
 
@@ -94,15 +108,8 @@ class TaskManager:
             verification_response = verifier.verifyTask(task)
             if verification_response:
                 logging.info("Start task '{id}'".format(id=task["IDENTIFIER"]))
-                full_path = "{config_path}/{config}/{path_in_config}/{env}/{object}.json.j2".format(
-                    config_path=self.config["config_path"],
-                    config=task['CONFIG'],
-                    path_in_config='deployment/src/main/resources/include/json/config',
-                    env=task["ENV"].lower(),
-                    object=task["OBJECT"].lower()
-                )
 
-                result = self.defineTask(task, full_path)
+                result = self.defineTask(task)
 
                 if result:
                     logging.info("SUCCESS: Task '{id}' was completed successfully \n".format(id=task["IDENTIFIER"]))
@@ -116,10 +123,10 @@ class TaskManager:
         if failed_tasks:
             logging.error("Next tasks finished unsuccessfully: {failed}".format(failed=failed_tasks))
 
-
-    def removeFields(self, task, full_path):
+    def removeFields(self, task):
         config_is_changed = False
         object_json = {}
+        full_path = Utils.get_path(self.config, task)
         if os.path.exists(full_path):
             object_json = Utils.readObjectJson(full_path)
         else:
@@ -144,9 +151,10 @@ class TaskManager:
 
         return True
 
-    def changeConfig(self, task, full_path):
+    def changeConfig(self, task):
         config_is_changed = False
         object_json = {}
+        full_path = Utils.get_path(self.config, task)
         if os.path.exists(full_path):
             object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
@@ -167,9 +175,10 @@ class TaskManager:
 
         return True
 
-    def removeObject(self, task, full_path):
+    def removeObject(self, task):
         config_is_changed = False
         object_json = {}
+        full_path = Utils.get_path(self.config, task)
         if os.path.exists(full_path):
             object_json = Utils.readObjectJson(full_path)
         else:
@@ -188,10 +197,11 @@ class TaskManager:
 
         return True
 
-    def checkDataCast(self, task, full_path):
+    def checkDataCast(self, task):
         config_builder = ConfigBuilder(self.config)
 
         object_json = {}
+        full_path = Utils.get_path(self.config, task)
         if os.path.exists(full_path):
             object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
@@ -236,12 +246,13 @@ class TaskManager:
 
         return True
 
-    def addFields(self, task, full_path):
+    def addFields(self, task):
         config_builder = ConfigBuilder(self.config)
         verifier = TaskVerifier()
         config_is_changed = False
 
         object_json = {}
+        full_path = Utils.get_path(self.config, task)
         if os.path.exists(full_path):
             object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
@@ -279,7 +290,7 @@ class TaskManager:
             return False
 
         fields_template = \
-            Utils.readTemplate(self.config["pwd"], task["CONFIG"].split("-")[0].lower())["FIELDS"][0]
+            Utils.readTemplate(self.config["pwd"], task)["FIELDS"][0]
         column_order = self.getMaxColumnOrder(object_json)
         for field in fields_dict:
             column_order += 1
@@ -302,8 +313,9 @@ class TaskManager:
 
         return True
 
-    def checkSalesForceApiName(self, task, full_path):
+    def checkSalesForceApiName(self, task):
         object_json = {}
+        full_path = Utils.get_path(self.config, task)
         if os.path.exists(full_path):
             object_json = Utils.readObjectJson(full_path)
             task = self.updateTask(task, object_json)
@@ -329,3 +341,34 @@ class TaskManager:
             return True
 
         return False
+
+    def createConfigReport(self, task):
+        object_report_columns = ['OBJECT_NAME', 'ENV', 'PRIORITY', 'ENABLED', 'INGESTION_TYPE']
+        fields_report_columns = ['OBJECT_NAME', 'ENV', 'COLUMN_ORDER','HIVE_NAME', 'SOURCE_NAME', 'ENABLED']
+        supported_envs = task["ATTRIBUTES"]["REPORT_ENVS"]
+        for env in supported_envs:
+            object_report = []
+            fields_report = []
+            path_to_env_folder = Utils.get_config_path_with_env(self.config, task, env)
+            all_object_at_env = Utils.get_all_object_by_path(path_to_env_folder)
+            for object_name in all_object_at_env:
+                full_path_to_object = Utils.get_path_to_object(self.config, task, env, object_name)
+                object_json = Utils.readObjectJson(full_path_to_object)
+                object_report.append({object_report_columns[0]: object_name,
+                                      object_report_columns[1]: env,
+                                      object_report_columns[2]: object_json[object_report_columns[2]],
+                                      object_report_columns[3]: object_json[object_report_columns[3]],
+                                      object_report_columns[4]: object_json[object_report_columns[4]]})
+                for field in object_json["FIELDS"]:
+                    fields_report.append({fields_report_columns[0]: object_name,
+                                          fields_report_columns[1]: env,
+                                          fields_report_columns[2]: field[fields_report_columns[2]],
+                                          fields_report_columns[3]: field[fields_report_columns[3]],
+                                          fields_report_columns[4]: field[fields_report_columns[4]],
+                                          fields_report_columns[5]: not field["IS_NULL"]})
+            Utils.write_csv_report(object_report, object_report_columns,
+                                   "{config}_{env}_objects_report".format(config=task["CONFIG"], env=env))
+            Utils.write_csv_report(fields_report, fields_report_columns,
+                                   "{config}_{env}_fields_report".format(config=task["CONFIG"], env=env))
+
+        return True

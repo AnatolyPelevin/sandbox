@@ -63,7 +63,7 @@ class ConfigBuilder:
         return misc_dict[task["CONFIG"]]
 
     def createObjectFromTemplate(self, task):
-        object_json = Utils().readTemplate(self.config["pwd"], task["CONFIG"].split("-")[0].lower())
+        object_json = Utils().readTemplate(self.config["pwd"], task)
         object_json["HIVE_TABLE_NAME"] = task["ATTRIBUTES"]["HIVE_TABLE_NAME"]
         object_json["DESTINATION_TABLE_NAME"] = task["ATTRIBUTES"]["DESTINATION_TABLE_NAME"]
         object_json["FIELDS"] = []
