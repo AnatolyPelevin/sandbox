@@ -83,10 +83,10 @@ public class ImportOptions {
         optionParser.accepts(TLS_VERSION).withOptionalArg().defaultsTo("TLSv1.2");
 
         //TODO add cred
-        optionParser.accepts(ADOBE_JWT_CLIENT_ID).withRequiredArg().ofType(String.class);
-        optionParser.accepts(ADOBE_JWT_CLIENT_SECRET).withRequiredArg().ofType(String.class);
-        optionParser.accepts(ADOBE_ORG_ID).withRequiredArg().ofType(String.class);
-        optionParser.accepts(ADOBE_TECHNICAL_ACCOUNT_ID).withRequiredArg().ofType(String.class);
+        optionParser.accepts(ADOBE_JWT_CLIENT_ID).withRequiredArg().ofType(String.class).defaultsTo("ebced9a044fe48178d2a86930ce1f23a");
+        optionParser.accepts(ADOBE_JWT_CLIENT_SECRET).withRequiredArg().ofType(String.class).defaultsTo("757cf369-37cc-483c-a978-035dde06a3b2");
+        optionParser.accepts(ADOBE_ORG_ID).withRequiredArg().ofType(String.class).defaultsTo("101A678254E6D3620A4C98A5@AdobeOrg");
+        optionParser.accepts(ADOBE_TECHNICAL_ACCOUNT_ID).withRequiredArg().ofType(String.class).defaultsTo("DD2B0C7D5F3D233A0A495FC6@techacct.adobe.com");
 
         optionParser.accepts(ADOBE_METASCOPES).withRequiredArg().ofType(String.class).defaultsTo("ent_analytics_bulk_ingest_sdk");
         optionParser.accepts(ADOBE_KEY_PATH).withRequiredArg().ofType(String.class).defaultsTo("D:\\WORK\\ADOBE_API\\Adobe_auth\\auth\\config\\private.key");

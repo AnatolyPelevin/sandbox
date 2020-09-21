@@ -29,9 +29,13 @@ public class AdobeToHDFS {
         LOG.info("Parse Adobe Analytics application options");
         //TODO remove empty arg
         if (!Optional.ofNullable(args).isPresent()) {
-            args = new String[] {"element1","element2","element3"};;
+            args = new String[] {"element1","element2","element3"};
+            //args = new String[] {"--tmp-location=D:\\WORK\\ADOBE_API\\Adobe_auth", "--adobe-key-path=D:\\WORK\\ADOBE_API\\Adobe_auth"};
         }
+       // System.out.println(Arrays.toString(args));
         ImportOptions options = new ImportOptions(args);
+        //System.out.println(options.getTmpLocation());
+        //System.out.println(options.getAdobeKeyPath());
 
         LOG.info("Start Adobe processing");
         new AdobeToHDFS(options).start();

@@ -25,9 +25,9 @@ public class HDFSService {
 
     public HDFSService(Configuration conf) {
         try {
-            fileSystem = FileSystem.getLocal(conf);
+            //fileSystem = FileSystem.getLocal(conf);
           //TODO return
-            //  fileSystem = FileSystem.get(conf);
+              fileSystem = FileSystem.get(conf);
         } catch (IOException e) {
             throw new AdobeException("Unable to instantiate hdfs.", e);
         }
