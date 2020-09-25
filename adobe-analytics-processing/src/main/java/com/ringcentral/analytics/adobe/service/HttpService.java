@@ -60,11 +60,10 @@ public class HttpService {
         LOG.info("Sending authentication request");
         HttpPost postRequestGetToken = new HttpPost(baseAuthUrl);
 
-        var postParameters = List.of(
-                new BasicNameValuePair("client_id", adobeJwtClientId),
-                new BasicNameValuePair("client_secret", adobeJwtClientSecret),
-                new BasicNameValuePair("jwt_token", jwtToken)
-        );
+        List<BasicNameValuePair> postParameters =Arrays.asList(
+                new BasicNameValuePair("client_id",adobeJwtClientId),
+                new BasicNameValuePair("client_secret",adobeJwtClientSecret),
+                new BasicNameValuePair("jwt_token",jwtToken));
 
         postRequestGetToken.setEntity(new UrlEncodedFormEntity(postParameters, "UTF-8"));
         try {
@@ -155,37 +154,5 @@ public class HttpService {
             throw new AdobeException("Error with User me API: ", e);
         }
     }
-
-//    private void doReportDownLoading(AdobeReportType abodeReportType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-//
-//        final String reportPath = abodeReportType.getReportPath();
-//        final Class enumReport = abodeReportType.getEnumClass();
-//
-//        Method method = enumReport.getDeclaredMethod("values");
-//        Object obj = method.invoke(null);
-//        System.out.println(Arrays.toString((Object[]) obj));
-//
-//        Method method1 = enumReport.getDeclaredMethod("getReportLoadOrder");
-//        Object obj1 = method1.invoke(null);
-//        ArrayList[] arrayLists = {(ArrayList) obj1};
-//
-//        System.out.println(Arrays.toString(arrayLists));
-//
-//
-////        URL url = getClass().getResource("/" + reportPath);
-//
-////        if (!Optional.ofNullable(url).isPresent()){
-////            LOG.info("There is no files in the path: " + reportPath);
-////            return;
-////        }
-////        String path = url.getPath();
-////        File[] fiels = new File(path).listFiles();
-////        Arrays.stream(fiels).forEach(file -> System.out.println(file.getAbsolutePath()));
-//
-////        for (File file: fiels) {
-////            System.out.println(file.getAbsolutePath());
-////        }
-//
-//    }
 
 }

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,9 +34,9 @@ public class Test {
 //       testResponseReportParsing();
 //       testFileWriting(args);
 //       testDateConvert();
-//       convert();
+      convert();
 
-        splitDateRange ();
+      //  splitDateRange ();
     }
 
     private static void splitDateRange (){
@@ -52,7 +53,7 @@ public class Test {
     }
 
     private static void convert() {
-        var arr = asList(
+        List<String> arr = asList(
                 "Jan 13, 2019",
                 "Apr 14, 2019",
                 "Aug 25, 2019",
@@ -136,17 +137,16 @@ public class Test {
 
     private static LocalDate testDateConvert(String dateString) {
         // String dateString = "Jan 13, 2019"; // 2019-01-13
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("LLL d, yyyy", Locale.ENGLISH);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH);
         return LocalDate.parse(dateString, formatter);
-
     }
 
     private static void testResponseReportParsing() {
-        List<Test> list1 = Arrays.asList(new Test("1", "qqqq", new LinkedHashSet<>() {{
+        List<Test> list1 = Arrays.asList(new Test("1", "qqqq", new LinkedHashSet<Integer>() {{
             add(0);
             add(2);
         }}));
-        List<Test> list2 = Arrays.asList(new Test("1", "qqqq", new LinkedHashSet<>() {{
+        List<Test> list2 = Arrays.asList(new Test("1", "qqqq", new LinkedHashSet<Integer>() {{
             add(0);
             add(3);
         }}));
@@ -185,14 +185,14 @@ public class Test {
         ImportOptions options = new ImportOptions(args);
 
         Path csvTmpPath = new Path(options.getTmpLocation() + "/" + "qqq.csv");
-        RecordWriter recordWriter = new RecordWriter(hdfs.getFileSystem(), csvTmpPath.toString());
+        RecordWriter recordWriter = new RecordWriter(hdfs.getFileSystem(), csvTmpPath.toString(), "qqq");
         try {
             hdfs.delete(csvTmpPath, true);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        var arr = asList(
+        List<String> arr = asList(
                 "\"Jan 13, 2019\", 194072, 69132, 56887, 38785, 12858, 5229, 18015, 187622, 68866, 54753, 38644, 12851, 5228, 1391",
                 "\"Apr 14, 2019\", 180416, 67484, 53037, 34765, 11974, 3948, 14869, 176358, 67280, 51700, 34530, 11926, 3947, 12477",
                 "\"Aug 25, 2019\", 189509, 67820, 56147, 35734, 12896, 2134, 16689, 184898, 67570, 54876, 35443, 12882, 2133, 13644",

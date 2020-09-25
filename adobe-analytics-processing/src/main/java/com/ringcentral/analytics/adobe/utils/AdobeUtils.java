@@ -48,12 +48,13 @@ public class AdobeUtils {
 
     /**
      * convert  date string in format = "May 12, 2019" into ISO 8601 format 2019-05-12
-     *
+     *LLL d, yyyy - 14 java
+     *MMM d, yyyy - 8 java
      * @param dateString - date string in format = "May 12, 2019"
      * @return date in ISO8601 format
      */
     public static LocalDate dateConverter(String dateString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("LLL d, yyyy", Locale.ENGLISH);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH);
         return LocalDate.parse(dateString, formatter);
     }
 

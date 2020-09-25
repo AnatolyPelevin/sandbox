@@ -6,12 +6,14 @@ import com.ringcentral.analytics.adobe.AdobeException;
 import com.ringcentral.analytics.adobe.Test;
 import com.ringcentral.analytics.adobe.service.HttpService;
 import com.ringcentral.analytics.adobe.utils.AdobeUtils;
+import com.ringcentral.analytics.adobe.utils.reports.body.GlobalFilter;
 import com.ringcentral.analytics.adobe.utils.reports.body.ReportBody;
 import com.ringcentral.analytics.adobe.utils.reports.response.RootObject;
 import com.ringcentral.analytics.adobe.utils.reports.response.Row;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectReader;
 import org.codehaus.jackson.map.ObjectWriter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -72,18 +74,19 @@ public class ReportLoader {
         return changeFiltersInReportBody(reportBody);
     }
 
-    //TODO if all reports need the same changes, then move logic into getReportBody method
-    private String changeFiltersInReportBody(String reportBody) throws IOException {
-        return switch (adobeReportType) {
-
-          case GTM_DECK, WEB_MARKETING_TRACKER -> {
-                var reportBodyObject = getObjectMapper().readValue(reportBody, ReportBody.class);
-                var globalFilters  = reportBodyObject.getGlobalFilters();
+   //TODO if all reports need the same changes, then move logic into getReportBody method
+    //java 8
+   private String changeFiltersInReportBody(String reportBody) throws IOException {
+      switch (adobeReportType) {
+           case GTM_DECK:
+           case WEB_MARKETING_TRACKER:
+               ReportBody reportBodyObject = getObjectMapper().readValue(reportBody, ReportBody.class);
+               List<GlobalFilter> globalFilters  = reportBodyObject.getGlobalFilters();
                 if (Optional.ofNullable(globalFilters).isPresent()){
                     globalFilters.forEach(globalFilter -> {
-                        var dateRange = globalFilter.getDateRange();
+                        String dateRange = globalFilter.getDateRange();
                         if (Optional.ofNullable(dateRange).isPresent()) {
-                            var index = globalFilters.indexOf(globalFilter);
+                            int index = globalFilters.indexOf(globalFilter);
                             dateRange = getDateRange(dateRange); //format should be "2019-01-06T00:00:00.000/2020-06-14T00:00:00.000"
                             globalFilter.setDateRange(dateRange);
                             globalFilters.set(index, globalFilter);
@@ -91,19 +94,41 @@ public class ReportLoader {
                     });
                 }
                 reportBody = getObjectMapper().writer().withDefaultPrettyPrinter().writeValueAsString(reportBodyObject);
-                yield reportBody;
-            }
-            default -> reportBody;
-        };
-    }
+       }
+       return reportBody;
+   }
+   ////java 14
+//    private String changeFiltersInReportBody(String reportBody) throws IOException {
+//        return switch (adobeReportType) {
+//
+//          case GTM_DECK, WEB_MARKETING_TRACKER -> {
+//                ObjectReader reportBodyObject = getObjectMapper().readValue(reportBody, ReportBody.class);
+//                var globalFilters  = reportBodyObject.getGlobalFilters();
+//                if (Optional.ofNullable(globalFilters).isPresent()){
+//                    globalFilters.forEach(globalFilter -> {
+//                        var dateRange = globalFilter.getDateRange();
+//                        if (Optional.ofNullable(dateRange).isPresent()) {
+//                            var index = globalFilters.indexOf(globalFilter);
+//                            dateRange = getDateRange(dateRange); //format should be "2019-01-06T00:00:00.000/2020-06-14T00:00:00.000"
+//                            globalFilter.setDateRange(dateRange);
+//                            globalFilters.set(index, globalFilter);
+//                        }
+//                    });
+//                }
+//                reportBody = getObjectMapper().writer().withDefaultPrettyPrinter().writeValueAsString(reportBodyObject);
+//                yield reportBody;
+//            }
+//            default -> reportBody;
+//        };
+//    }
 
     public List<String> load() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         final String primaryReportPath = adobeReportType.getReportPath();
         final Class enumReport = adobeReportType.getEnumClass();
 
         Method methodGetReportLoadOrder = enumReport.getDeclaredMethod("getReportLoadOrder");
-        var objReportForLoading = methodGetReportLoadOrder.invoke(null);
-        var listReportForLoading = AdobeUtils.convertObjectToList(objReportForLoading);
+        Object objReportForLoading = methodGetReportLoadOrder.invoke(null);
+        List<?> listReportForLoading = AdobeUtils.convertObjectToList(objReportForLoading);
         List<List<Row>> reportPartData = new ArrayList<>();
 
         listReportForLoading.stream()

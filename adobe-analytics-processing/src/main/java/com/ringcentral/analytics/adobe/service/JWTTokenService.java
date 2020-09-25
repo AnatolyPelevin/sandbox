@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import static java.lang.Boolean.TRUE;
-import static java.util.Map.entry;
+
 
 /**
  * To get web token: First step is to create a JSON Web Token (JWT) using your
@@ -79,7 +79,7 @@ public class JWTTokenService {
         RSAPrivateKey privateKey = (RSAPrivateKey)KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKeyFileContent));
 
         // Create JWT payload
-        Map<String, Object> jwtClaims = new HashMap<>(){{
+        Map<String, Object> jwtClaims = new HashMap<String, Object>(){{
                 put( "iss", adobeOrgId);
                 put( "sub", adobeTechnicalAccountId);
                 put( "exp", expirationTime);

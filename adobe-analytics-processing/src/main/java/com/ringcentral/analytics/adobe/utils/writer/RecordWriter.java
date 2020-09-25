@@ -20,8 +20,9 @@ public class RecordWriter {
     private static final Logger LOG = LoggerFactory.getLogger(HDFSService.class);
     private FSDataOutputStream fsDataOutputStream;
 
-    public RecordWriter(FileSystem fileSystem, String path) throws IOException {
-        fsDataOutputStream = fileSystem.create(new Path(path, LocalDate.now().toString() + UUID.randomUUID().toString()));
+    public RecordWriter(FileSystem fileSystem, String path, String reportName) throws IOException {
+       // fsDataOutputStream = fileSystem.create(new Path(path, LocalDate.now().toString() + UUID.randomUUID().toString()));
+        fsDataOutputStream = fileSystem.create(new Path(path, reportName));
     }
 
     public void write(String record) {

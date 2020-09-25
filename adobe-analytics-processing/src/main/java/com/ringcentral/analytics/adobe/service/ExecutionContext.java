@@ -4,6 +4,7 @@ import com.ringcentral.analytics.adobe.utils.ImportOptions;
 import com.ringcentral.analytics.adobe.utils.reports.ReportLoader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Optional;
 import com.ringcentral.analytics.adobe.utils.writer.RecordWriter;
 import org.apache.hadoop.fs.Path;
@@ -31,9 +32,9 @@ public class ExecutionContext {
         LOG.info("Start processing report: " + reportName);
         Path csvTmpPath = new Path(options.getTmpLocation() + SLASH + reportName + ".csv");
         hdfs.delete(csvTmpPath, true);
-        var reportAsListOfStrings = reportLoader.load();
+        List<String> reportAsListOfStrings = reportLoader.load();
         if (Optional.ofNullable(reportAsListOfStrings).isPresent()) {
-            RecordWriter recordWriter = new RecordWriter(hdfs.getFileSystem(), csvTmpPath.toString());
+            RecordWriter recordWriter = new RecordWriter(hdfs.getFileSystem(), csvTmpPath.toString(), reportName);
             reportAsListOfStrings.forEach(row -> recordWriter.write(row));
             recordWriter.close();
         }
