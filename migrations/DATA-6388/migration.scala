@@ -20,7 +20,6 @@
     def createDateList(): List[String] = {
         val first = LocalDate.parse(latestDate)
         val last = LocalDate.parse(oldestDate)
-        if (last.equals(first)) return List.apply(latestDate)
         last.toEpochDay.to(first.toEpochDay).
             toList.sorted.reverse.
             map(date => LocalDate.ofEpochDay(date).toString)
