@@ -9,7 +9,7 @@ IMPALA_INVALIDATE_SERVICE_URL=""
 LOG_FILE_NAME="DATA-6388-$(date +"%F-%T").log"
 touch $LOG_FILE_NAME
 
-spark-shell -i spark.scala \
+spark-shell -i migration.scala \
                     --conf spark.driver.args="$LATESTDATE,$OLDESTDATE" \
                     --conf spark.executor.extraJavaOptions=-XX:MaxDirectMemorySize=1536M  \
                     --conf spark.executor.memoryOverhead=2048M  \
