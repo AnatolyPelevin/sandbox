@@ -16,6 +16,7 @@ object Generator extends Logging {
             case Some(o) =>
                 implicit val options: GenOptions = o
                 implicit val spark: SparkSession = SparkSession.builder.enableHiveSupport().getOrCreate()
+                validateRequestType(options)
                 generate
         }
     }
@@ -25,11 +26,6 @@ object Generator extends Logging {
         val sparkUtils = new SparkUtils(spark, options.schemaName)
         val messageList = new MessageGenerator(options, sparkUtils)
         val requestSender = new RequestSender(options)
-
-        if (!isValidRequestType(options)) {
-            println("REQUEST TYPE IS INVALID: " + options.requestType)
-            System.exit(1)
-        }
 
         for (tableName <- options.tableNames) {
             val messages = messageList.compose(tableName)
@@ -43,15 +39,15 @@ object Generator extends Logging {
         System.exit(0)
     }
 
-    private def isValidRequestType(options: GenOptions): Boolean = {
+    private def validateRequestType(options: GenOptions): Unit = {
         try {
             RequestType.valueOf(options.requestType)
-        }catch {
+        } catch {
             case _: IllegalArgumentException => {
-                return false
+                println("REQUEST TYPE IS INVALID: " + options.requestType)
+                System.exit(1)
             }
         }
-        true
     }
 }
 
