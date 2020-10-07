@@ -1,12 +1,12 @@
-package generator.utils
+package com.ringcentral.analytics.sns.backup.request.generator.utils
 
+import com.ringcentral.analytics.sns.backup.request.generator.GeneratorOptions
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions.col
 
-class SparkUtils (spark: SparkSession,
+class SparkUtils (options: GeneratorOptions,
+                  spark: SparkSession,
                   schemaName: String) {
-
-    val hdfsPrefix = "hdfs://nameservice1"
 
     def getAllTablePartitions(tableName: String): List[String] = {
         var df: DataFrame = spark.emptyDataFrame
@@ -18,8 +18,7 @@ class SparkUtils (spark: SparkSession,
                 if (e.getMessage.startsWith("SHOW PARTITIONS")) {
                     return List.empty
                 } else {
-                    println(e)
-                    System.exit(1)
+                    throw e
                 }
             }
         }
@@ -29,11 +28,11 @@ class SparkUtils (spark: SparkSession,
             .toList
     }
 
-    def getSamplePartitionUrl(tableName: String, partition: String, isPartitioned: Boolean): String = {
+    def getSourcePath(tableName: String, partition: String, isPartitioned: Boolean): String = {
         var df: DataFrame = spark.emptyDataFrame
-
         if (isPartitioned) {
-            df = spark.sql(s"""describe formatted $schemaName.$tableName partition ($partition)""".stripMargin)
+            val partitionCorrected = getCorrectedPartition(partition)
+            df = spark.sql(s"""describe formatted $schemaName.$tableName partition ($partitionCorrected)""".stripMargin)
         } else {
             df = spark.sql(s"""describe formatted $schemaName.$tableName""".stripMargin)
         }
@@ -41,7 +40,10 @@ class SparkUtils (spark: SparkSession,
         df.filter(col("col_name").equalTo("Location"))
             .first()
             .getString(1)
-            .replace(hdfsPrefix, "")
+            .replace(options.hdfsPrefix, "")
     }
 
+    def getCorrectedPartition(partition: String): String = {
+        partition.replace("/", "',").replace("=", "='").concat("'")
+    }
 }
