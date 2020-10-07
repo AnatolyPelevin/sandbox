@@ -7,8 +7,6 @@ import com.ringcentral.analytics.sns.backup.request.generator.model.{Message, Re
 import com.ringcentral.analytics.sns.backup.request.generator.utils.{MessageGenerator, RequestSender, SparkUtils}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
-import sns.backup.request.generator.model.RequestType
-import sns.backup.request.generator.utils.SparkUtils
 
 object Generator extends Logging {
     implicit val localDateOrdering: Ordering[LocalDate] = Ordering.by(_.toEpochDay)
@@ -54,7 +52,8 @@ object Generator extends Logging {
                                  tableName: String): List[Message] = {
         val messages = messageGenerator.compose(tableName)
         if (messages.isEmpty) {
-            throw new IllegalArgumentException("There are no partitions in table \"" + tableName + "\" matching spec: \"" + options.partitionSpec + "\"")
+            logInfo("No messages have been generated for table \"" + tableName + "\". " +
+                "There are no partitions in table matching spec: \"" + options.partitionSpec + "\"")
         }
         logInfo("Messages are generated for table \"" + options.schemaName + "." + tableName + "\"")
         messages
