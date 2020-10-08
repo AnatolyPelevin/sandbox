@@ -29,7 +29,7 @@ object Generator extends Logging {
 
         for (tableName <- options.tableNames) {
             val messages = generateMessagesForTable(options, messageGenerator, tableName)
-            sendTableMessages(requestSender, messages)
+            if (messages.nonEmpty) sendTableMessages(requestSender, messages)
         }
         System.exit(0)
     }
@@ -54,6 +54,7 @@ object Generator extends Logging {
         if (messages.isEmpty) {
             logInfo("No messages have been generated for table \"" + tableName + "\". " +
                 "There are no partitions in table matching spec: \"" + options.partitionSpec + "\"")
+            return List.empty
         }
         logInfo("Messages are generated for table \"" + options.schemaName + "." + tableName + "\"")
         messages
