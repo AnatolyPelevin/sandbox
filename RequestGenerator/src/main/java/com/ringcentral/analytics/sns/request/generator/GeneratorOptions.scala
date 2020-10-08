@@ -1,4 +1,4 @@
-package com.ringcentral.analytics.sns.backup.request.generator
+package com.ringcentral.analytics.sns.request.generator
 
 import scopt.OptionParser
 

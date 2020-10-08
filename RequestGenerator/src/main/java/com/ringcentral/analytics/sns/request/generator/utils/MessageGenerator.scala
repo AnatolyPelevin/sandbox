@@ -1,7 +1,7 @@
-package com.ringcentral.analytics.sns.backup.request.generator.utils
+package com.ringcentral.analytics.sns.request.generator.utils
 
-import com.ringcentral.analytics.sns.backup.request.generator.GeneratorOptions
-import com.ringcentral.analytics.sns.backup.request.generator.model.{Message, RequestType}
+import com.ringcentral.analytics.sns.request.generator.GeneratorOptions
+import com.ringcentral.analytics.sns.request.generator.model.{Message, RequestType}
 
 class MessageGenerator(options: GeneratorOptions, sparkUtils: SparkUtils) {
 

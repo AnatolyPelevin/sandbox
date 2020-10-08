@@ -1,6 +1,6 @@
-package com.ringcentral.analytics.sns.backup.request.generator.utils
+package com.ringcentral.analytics.sns.request.generator.utils
 
-import com.ringcentral.analytics.sns.backup.request.generator.GeneratorOptions
+import com.ringcentral.analytics.sns.request.generator.GeneratorOptions
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions.col
 

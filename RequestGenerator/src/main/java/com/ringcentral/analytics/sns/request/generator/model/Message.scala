@@ -1,6 +1,6 @@
-package com.ringcentral.analytics.sns.backup.request.generator.model
+package com.ringcentral.analytics.sns.request.generator.model
 
-import RequestType.RequestType
+import com.ringcentral.analytics.sns.request.generator.model.RequestType.RequestType
 
 class Message(requestType: RequestType,
               sourcePath: String,

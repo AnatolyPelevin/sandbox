@@ -1,10 +1,10 @@
-package com.ringcentral.analytics.sns.backup.request.generator
+package com.ringcentral.analytics.sns.request.generator
 
 import java.io.IOException
 import java.time.LocalDate
 
-import com.ringcentral.analytics.sns.backup.request.generator.model.{Message, RequestType}
-import com.ringcentral.analytics.sns.backup.request.generator.utils.{MessageGenerator, RequestSender, SparkUtils}
+import com.ringcentral.analytics.sns.request.generator.model.{Message, RequestType}
+import com.ringcentral.analytics.sns.request.generator.utils.{MessageGenerator, RequestSender, SparkUtils}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 

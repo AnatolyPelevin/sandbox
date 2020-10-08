@@ -1,4 +1,4 @@
-package com.ringcentral.analytics.sns.backup.request.generator.model
+package com.ringcentral.analytics.sns.request.generator.model
 
 object RequestType extends Enumeration {
     type RequestType = Value
