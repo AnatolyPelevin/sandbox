@@ -37,7 +37,6 @@
                 --conf spark.task.maxFailures=1
                 --conf spark.blacklist.enabled=false
                 --conf spark.kryoserializer.buffer.max=${sparkKryoserializerBufferMax}m
-                --conf spark.sql.autoBroadcastJoinThreshold=-1
                 --files ${oozieLibpath}/xml/hive-site.xml
             </spark-opts>
 
