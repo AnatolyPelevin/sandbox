@@ -9,32 +9,30 @@ class SparkUtils (options: GeneratorOptions,
                   schemaName: String) {
 
     def getAllTablePartitions(tableName: String): List[String] = {
-        var df: DataFrame = spark.emptyDataFrame
         try {
-            df = spark.sql(s"""show partitions $schemaName.$tableName""")
+            val df = spark.sql(s"show partitions $schemaName.$tableName")
+            df.rdd
+                .map(row => row.getString(0))
+                .collect()
+                .toList
         }
         catch {
             case e: Throwable => {
                 if (e.getMessage.startsWith("SHOW PARTITIONS")) {
-                    return List.empty
+                    List.empty
                 } else {
                     throw e
                 }
             }
         }
-        df.rdd
-            .map(row => row.getString(0))
-            .collect()
-            .toList
     }
 
     def getSourcePath(tableName: String, partition: String, isPartitioned: Boolean): String = {
-        var df: DataFrame = spark.emptyDataFrame
-        if (isPartitioned) {
+        val df: DataFrame = if (isPartitioned) {
             val partitionCorrected = getCorrectedPartition(partition)
-            df = spark.sql(s"""describe formatted $schemaName.$tableName partition ($partitionCorrected)""".stripMargin)
+            spark.sql(s"describe formatted $schemaName.$tableName partition ($partitionCorrected)")
         } else {
-            df = spark.sql(s"""describe formatted $schemaName.$tableName""".stripMargin)
+            spark.sql(s"describe formatted $schemaName.$tableName")
         }
 
         df.filter(col("col_name").equalTo("Location"))

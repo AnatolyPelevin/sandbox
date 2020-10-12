@@ -8,13 +8,13 @@ class Message(requestType: RequestType,
               tableName: String,
               partitionSpec: String) {
 
-    def getSchemaName():String = schemaName
+    def getSchemaName(): String = schemaName
 
-    def getTableName():String = tableName
+    def getTableName(): String = tableName
 
-    def getPartitionSpec():String = partitionSpec
+    def getPartitionSpec(): String = partitionSpec
 
-    override def toString = {
+    override def toString: String = {
         val basicMessage = "{\"requestType\":\"".concat(requestType.toString)
             .concat("\",\n\"sourcePath\":\"")
             .concat(sourcePath)
