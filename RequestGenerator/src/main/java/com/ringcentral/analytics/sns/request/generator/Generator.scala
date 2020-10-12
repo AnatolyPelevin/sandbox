@@ -39,10 +39,7 @@ object Generator extends Logging {
             RequestType.withName(options.requestType)
         } catch {
             case e: NoSuchElementException => {
-                throw new NoSuchElementException(e.getMessage +
-                    "\nRequest type is invalid: " +
-                    options.requestType +
-                    ". Allowed types are APPEND, DELETE or REPLACE")
+                throw new NoSuchElementException(s"Request type is invalid: ${options.requestType}. Allowed types are APPEND, DELETE or REPLACE")
             }
         }
     }
@@ -52,11 +49,10 @@ object Generator extends Logging {
                                  tableName: String): List[Message] = {
         val messages = messageGenerator.compose(tableName)
         if (messages.isEmpty) {
-            logInfo("No messages have been generated for table \"" + tableName + "\". " +
-                "There are no partitions in table matching spec: \"" + options.partitionSpec + "\"")
+            println(s"No messages have been generated for table '$tableName'. There are no partitions in table matching spec: '${options.partitionSpec}'")
             return List.empty
         }
-        logInfo("Messages are generated for table \"" + options.schemaName + "." + tableName + "\"")
+        println(s"Messages are generated for table '${options.schemaName}.$tableName'")
         messages
     }
 
@@ -66,16 +62,16 @@ object Generator extends Logging {
             try {
                 val response = requestSender.send(message)
                 if (response != 200) {
-                    val info = "Request for " + message.getSchemaName() + "." + message.getTableName() + "/" + message.getPartitionSpec() + " has not succeed: " + response
-                    logInfo(info)
+                    val info = s"Request for '${message.getSchemaName()}.${message.getTableName()}' ${message.getPartitionSpec()} has not succeed: $response"
+                    println(info)
                 }
             } catch {
                 case e: IOException => {
-                    logInfo("Request failed: ", e)
+                    println("Request failed: ", e)
                 }
             }
         }
-        logInfo("Messages have been sent for table \"" + messages.head.getSchemaName() + "." + messages.head.getTableName() + "\"")
+        println(s"Messages have been sent for table '${messages.head.getSchemaName()}.${messages.head.getTableName()}'")
     }
 }
 
