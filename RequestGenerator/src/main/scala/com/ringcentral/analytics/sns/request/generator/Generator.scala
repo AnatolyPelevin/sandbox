@@ -49,29 +49,29 @@ object Generator extends Logging {
                                  tableName: String): List[Message] = {
         val messages = messageGenerator.compose(tableName)
         if (messages.isEmpty) {
-            println(s"No messages have been generated for table '$tableName'. There are no partitions in table matching spec: '${options.partitionSpec}'")
+            logInfo(s"No messages have been generated for table '$tableName'. There are no partitions in table matching spec: '${options.partitionSpec}'")
             return List.empty
         }
-        println(s"Messages are generated for table '${options.schemaName}.$tableName'")
+        logInfo(s"Messages are generated for table '${options.schemaName}.$tableName'")
         messages
     }
 
     def sendTableMessages(requestSender: RequestSender,
                           messages: List[Message]): Unit = {
+        logInfo(s"Start sending messages for table '${messages.head.getSchemaName()}.${messages.head.getTableName()}'")
         for (message <- messages) {
             try {
                 val response = requestSender.send(message)
                 if (response != 200) {
                     val info = s"Request for '${message.getSchemaName()}.${message.getTableName()}' ${message.getPartitionSpec()} has not succeed: $response"
-                    println(info)
+                    logInfo(info)
                 }
             } catch {
                 case e: IOException => {
-                    println("Request failed: ", e)
+                    logInfo("Request failed: ", e)
                 }
             }
         }
-        println(s"Messages have been sent for table '${messages.head.getSchemaName()}.${messages.head.getTableName()}'")
     }
 }
 
