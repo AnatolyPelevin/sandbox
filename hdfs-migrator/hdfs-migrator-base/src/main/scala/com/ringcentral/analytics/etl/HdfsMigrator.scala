@@ -1,0 +1,58 @@
+package com.ringcentral.analytics.etl
+
+import java.time.LocalDateTime
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+
+import com.ringcentral.analytics.etl.config.ConfigReader
+import com.ringcentral.analytics.etl.fs.FileSystemService
+import com.ringcentral.analytics.etl.logger.EtlLogger
+import com.ringcentral.analytics.etl.migrator.MigratorJobFactory
+import com.ringcentral.analytics.etl.options.EtlLoggerOptions
+import com.ringcentral.analytics.etl.options.MigratorOptions
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.hive.conf.HiveConf
+import org.apache.hadoop.hive.ql.metadata.Hive
+import org.apache.spark.deploy.SparkHadoopUtil
+import org.apache.spark.internal.Logging
+import org.apache.spark.sql.SparkSession
+
+object HdfsMigrator extends Logging {
+
+    def main(args: Array[String]): Unit = {
+        implicit val options: MigratorOptions = MigratorOptions(args)
+        logInfo(options.toString)
+
+        val sparkOptions = options.sparkOptions
+        implicit val spark: SparkSession = SparkSession.builder
+            .enableHiveSupport()
+            .appName(options.applicationName)
+            .config("spark.scheduler.mode", sparkOptions.schedulerMode)
+            .getOrCreate()
+
+        val hiveConf = new HiveConf(SparkHadoopUtil.get.conf, HdfsMigrator.getClass)
+        implicit val hive: Hive = Hive.get(hiveConf)
+
+        val loggerOptions: EtlLoggerOptions = options.etlLoggerOptions.copy(jobId = spark.sparkContext.applicationId)
+        implicit val etlLogger: EtlLogger = new EtlLogger(loggerOptions)
+
+        val fileSystem = FileSystem.get(spark.sparkContext.hadoopConfiguration)
+        implicit val fileSystemService: FileSystemService = new FileSystemService(fileSystem)
+
+        val configReader = new ConfigReader(options.etlLoggerOptions.dbConnectionOptions, options.tableConfigOptions)
+        val tables = configReader.getTableConfigs
+
+        logInfo(s"Will migrate tables ${tables.map(_.hiveTableName).mkString(",")}")
+
+        val factory = new MigratorJobFactory(LocalDateTime.now)
+
+        val threadPool = Executors.newFixedThreadPool(options.jobsThreadsCount)
+        val futures = tables
+            .map(factory.createJob)
+            .map(job => CompletableFuture.runAsync(job, threadPool))
+
+        CompletableFuture.allOf(futures: _*).join()
+        spark.stop()
+        threadPool.shutdownNow()
+    }
+}
