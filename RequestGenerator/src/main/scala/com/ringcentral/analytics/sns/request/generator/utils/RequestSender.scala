@@ -16,6 +16,7 @@ class RequestSender(options: GeneratorOptions) {
     private val user = options.snsUserName
     private val password = options.snsUserPassword
     private val connectionTimeout = options.connectionTimeout
+    private val contentType = "application/json"
 
     def send(message: Message): Int = {
         val client = HttpClientBuilder
@@ -26,8 +27,8 @@ class RequestSender(options: GeneratorOptions) {
         val httpPost = new HttpPost(url)
 
         httpPost.setHeader(new BasicScheme().authenticate(new UsernamePasswordCredentials(user, password), httpPost, null))
-        httpPost.setHeader("Accept", "application/json")
-        httpPost.setHeader("Content-type", "application/json")
+        httpPost.setHeader("Accept", contentType)
+        httpPost.setHeader("Content-type", contentType)
         httpPost.setEntity(new StringEntity(message.toString))
 
         val response = client.execute(httpPost)
