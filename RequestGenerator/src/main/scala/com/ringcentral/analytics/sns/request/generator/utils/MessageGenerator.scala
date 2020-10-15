@@ -37,6 +37,6 @@ class MessageGenerator(options: GeneratorOptions, sparkUtils: SparkUtils) {
                 tableName,
                 partitionSpec
             )
-        )
+        ).sortWith((a, b) => a.getPartitionSpec().compareTo(b.getPartitionSpec()) < 0)
     }
 }

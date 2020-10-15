@@ -5,9 +5,10 @@ import com.ringcentral.analytics.sns.request.generator.GeneratorOptions
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.StringEntity
+import org.apache.http.entity.{ContentType, StringEntity}
 import org.apache.http.impl.auth.BasicScheme
 import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.HttpResponse
 
 class RequestSender(options: GeneratorOptions) {
 
@@ -16,9 +17,8 @@ class RequestSender(options: GeneratorOptions) {
     private val user = options.snsUserName
     private val password = options.snsUserPassword
     private val connectionTimeout = options.connectionTimeout
-    private val contentType = "application/json"
 
-    def send(message: Message): Int = {
+    def send(message: Message): HttpResponse = {
         val client = HttpClientBuilder
             .create
             .setDefaultRequestConfig(RequestConfig.custom.setConnectTimeout(connectionTimeout).build)
@@ -27,12 +27,12 @@ class RequestSender(options: GeneratorOptions) {
         val httpPost = new HttpPost(url)
 
         httpPost.setHeader(new BasicScheme().authenticate(new UsernamePasswordCredentials(user, password), httpPost, null))
-        httpPost.setHeader("Accept", contentType)
-        httpPost.setHeader("Content-type", contentType)
+        httpPost.setHeader("Accept", ContentType.APPLICATION_JSON.toString)
+        httpPost.setHeader("Content-type", ContentType.APPLICATION_JSON.toString)
         httpPost.setEntity(new StringEntity(message.toString))
 
         val response = client.execute(httpPost)
         client.close()
-        response.getStatusLine.getStatusCode
+        response
     }
 }
