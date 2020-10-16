@@ -9,21 +9,15 @@ class SparkUtils (options: GeneratorOptions,
                   schemaName: String) {
 
     def getAllTablePartitions(tableName: String): List[String] = {
-        try {
+        if (isPartitioned(tableName)) {
             val df = spark.sql(s"show partitions $schemaName.$tableName")
             df.rdd
                 .map(row => row.getString(0))
                 .collect()
                 .toList
         }
-        catch {
-            case e: Throwable => {
-                if (e.getMessage.startsWith("SHOW PARTITIONS")) {
-                    List.empty
-                } else {
-                    throw e
-                }
-            }
+        else {
+            List.empty
         }
     }
 
@@ -43,5 +37,15 @@ class SparkUtils (options: GeneratorOptions,
 
     def getCorrectedPartition(partition: String): String = {
         partition.replace("/", "',").replace("=", "='").concat("'")
+    }
+
+    def isPartitioned(tableName: String): Boolean = {
+        val partitionNum = spark.catalog
+            .listColumns(schemaName, tableName)
+            .rdd
+            .filter(c => c.isPartition)
+            .collect()
+            .length
+        partitionNum > 0
     }
 }

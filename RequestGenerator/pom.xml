@@ -6,7 +6,7 @@
     <groupId>com.ringcentral.analytics</groupId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
-    <artifactId>Generator</artifactId>
+    <artifactId>generator</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

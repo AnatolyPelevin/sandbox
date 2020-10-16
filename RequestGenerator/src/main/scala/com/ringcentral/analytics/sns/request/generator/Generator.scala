@@ -66,7 +66,7 @@ object Generator extends Logging {
                 if (!response.getStatusLine.getStatusCode.toString.matches("2\\d\\d")) {
                     val err = s"Request for '${message.getSchemaName()}.${message.getTableName()}' ${message.getPartitionSpec()} has not succeed: $response"
                     logError(err)
-                    throw new HttpException()
+                    throw new HttpException(err)
                 }
             } catch {
                 case e: IOException => {
