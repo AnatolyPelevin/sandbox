@@ -1,0 +1,109 @@
+{
+    "rsid": "rcentral-dev",
+    "globalFilters": [
+        {
+            "type": "segment",
+            "segmentId": "s300004643_5f4349ba80f0070afe4d4165"
+        },
+        {
+            "type": "segment",
+            "segmentId": "s300004643_5eb25bc5bc5fc416a1a0862d"
+        },
+        {
+            "type": "dateRange",
+            "dateRange": "2019-01-06T00:00:00.000/2020-06-14T00:00:00.000"
+        }
+    ],
+    "metricContainer": {
+        "metrics": [
+            {
+                "columnId": "1",
+                "id": "metrics/visitors",
+                "filters": [
+                    "0"
+                ]
+            },
+            {
+                "columnId": "2",
+                "id": "metrics/visitors",
+                "filters": [
+                    "1"
+                ]
+            },
+            {
+                "columnId": "3",
+                "id": "metrics/visitors",
+                "filters": [
+                    "2"
+                ]
+            },
+            {
+                "columnId": "4",
+                "id": "metrics/visitors",
+                "filters": [
+                    "3"
+                ]
+            },
+            {
+                "columnId": "5",
+                "id": "metrics/visitors",
+                "filters": [
+                    "4"
+                ]
+            },
+            {
+                "columnId": "6",
+                "id": "metrics/visitors",
+                "filters": [
+                    "5"
+                ]
+            }
+        ],
+        "metricFilters": [
+            {
+                "id": "0",
+                "type": "segment",
+                "segmentId": "s300004643_5e79383d5fe71e2afac322ef"
+            },
+            {
+                "id": "1",
+                "type": "segment",
+                "segmentId": "s300004643_5d95fb5b59652615e83c7457"
+            },
+            {
+                "id": "2",
+                "type": "segment",
+                "segmentId": "s300004643_5d719a9cea814568278873d2"
+            },
+            {
+                "id": "3",
+                "type": "segment",
+                "segmentId": "s300004643_5e7939ef7097ba5154039ce2"
+            },
+            {
+                "id": "4",
+                "type": "segment",
+                "segmentId": "s300004643_5eb24d398b0343557fab1dc2"
+            },
+            {
+                "id": "5",
+                "type": "segment",
+                "segmentId": "s300004643_5ece041f07256244dcf3ae00"
+            }
+        ]
+    },
+    "dimension": "variables/daterangeweek",
+    "settings": {
+        "countRepeatInstances": true,
+        "limit": 400,
+        "page": 0,
+        "dimensionSort": "asc",
+        "nonesBehavior": "return-nones"
+    },
+    "statistics": {
+        "functions": [
+            "col-max",
+            "col-min"
+        ]
+    }
+}

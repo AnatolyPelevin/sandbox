@@ -1,0 +1,39 @@
+{
+    "rsid": "rcentral-dev",
+    "globalFilters": [
+        {
+            "type": "segment",
+            "segmentId": "s300004643_5f3b5f08c945642a40bba86c"
+        },
+        {
+            "type": "segment",
+            "segmentId": "s300004643_5eb25bc5bc5fc416a1a0862d"
+        },
+        {
+            "type": "dateRange",
+            "dateRange": "2019-01-06T00:00:00.000/2020-06-14T00:00:00.000"
+        }
+    ],
+    "metricContainer": {
+        "metrics": [
+            {
+                "columnId": "0",
+                "id": "metrics/visitors"
+            }
+        ]
+    },
+    "dimension": "variables/daterangeweek",
+    "settings": {
+        "countRepeatInstances": true,
+        "limit": 400,
+        "page": 0,
+        "dimensionSort": "asc",
+        "nonesBehavior": "return-nones"
+    },
+    "statistics": {
+        "functions": [
+            "col-max",
+            "col-min"
+        ]
+    }
+}
