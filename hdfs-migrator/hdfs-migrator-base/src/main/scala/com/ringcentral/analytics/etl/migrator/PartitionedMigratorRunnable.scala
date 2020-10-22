@@ -26,7 +26,6 @@ class PartitionedMigratorRunnable(tableConfig: TableDefinition)
     def run(): Unit = {
         val dbName = options.hiveDBName
         val tableName = tableConfig.hiveTableName
-        val outDataPath = options.outDataPath
         logInfo(s"Initiate migration for table $tableName")
 
         val table = hive.getTable(dbName, tableName)
@@ -69,7 +68,7 @@ class PartitionedMigratorRunnable(tableConfig: TableDefinition)
             return false
         }
 
-        return executeSqlWithLogging(alterPartitionTableLocationSql(tableName, date, tsPath))
+        executeSqlWithLogging(alterPartitionTableLocationSql(tableName, date, tsPath))
     }
 
 

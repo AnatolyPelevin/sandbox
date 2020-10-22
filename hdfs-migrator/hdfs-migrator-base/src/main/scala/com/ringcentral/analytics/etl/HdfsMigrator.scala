@@ -1,6 +1,5 @@
 package com.ringcentral.analytics.etl
 
-import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
@@ -39,12 +38,13 @@ object HdfsMigrator extends Logging {
         val fileSystem = FileSystem.get(spark.sparkContext.hadoopConfiguration)
         implicit val fileSystemService: FileSystemService = new FileSystemService(fileSystem)
 
-        val configReader = new ConfigReader(options.etlLoggerOptions.dbConnectionOptions, options.tableConfigOptions)
+        val configReader = new ConfigReader(options.etlLoggerOptions.dbConnectionOptions, options.tableConfigName)
         val tables = configReader.getTableConfigs
 
-        logInfo(s"Will migrate tables ${tables.map(_.hiveTableName).mkString(",")}")
+        val tableNames: String = tables.map(_.hiveTableName).mkString(",")
+        logInfo(s"Will migrate tables $tableNames")
 
-        val factory = new MigratorJobFactory(LocalDateTime.now)
+        val factory = new MigratorJobFactory()
 
         val threadPool = Executors.newFixedThreadPool(options.jobsThreadsCount)
         val futures = tables

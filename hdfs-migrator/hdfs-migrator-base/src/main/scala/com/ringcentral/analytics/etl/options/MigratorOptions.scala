@@ -4,14 +4,13 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 import com.ringcentral.analytics.etl.config.EtlDbConnectionOptions
-import com.ringcentral.analytics.etl.config.TableConfigOptions
 import joptsimple.OptionParser
 import joptsimple.OptionSet
 
 case class MigratorOptions(
                               etlLoggerOptions: EtlLoggerOptions = EtlLoggerOptions(),
                               sparkOptions: SparkOptions = SparkOptions(),
-                              tableConfigOptions: TableConfigOptions = TableConfigOptions(),
+                              tableConfigName: String = "",
                               outDataPath: String = "",
                               hiveDBName: String = "",
                               dt: LocalDateTime,
@@ -25,9 +24,7 @@ object MigratorOptions {
     private val DEFAULT_SCHEDULER_MODE = "FAIR"
     private val DEFAULT_JOBS_THREADS_COUNT = 10
 
-    private val DB_CONFIG_TABLE_NAME = "db-config-table-name"
     private val TABLE_CONFIG_TABLE_NAME = "table-config-table-name"
-    private val FIELD_CONFIG_TABLE_NAME = "field-config-table-name"
 
     private val OUT_DATA_PATH = "out-data-path"
     private val JOBS_THREADS_COUNT = "jobs-threads-count"
@@ -39,17 +36,6 @@ object MigratorOptions {
     private val APPLICATION_NAME = "application-name"
     private val SCHEDULER_MODE = "scheduler-mode"
     private val ETL_LOG_TABLE = "etl-log-table"
-
-    def applyTableConfigOptions(options: OptionSet): TableConfigOptions = {
-        val dbConfigTableName = options.valueOf(DB_CONFIG_TABLE_NAME).asInstanceOf[String]
-        val tableConfigTableName = options.valueOf(TABLE_CONFIG_TABLE_NAME).asInstanceOf[String]
-        val hiveFieldConfigTable = options.valueOf(FIELD_CONFIG_TABLE_NAME).asInstanceOf[String]
-        TableConfigOptions(
-            dbConfigTableName,
-            tableConfigTableName,
-            hiveFieldConfigTable
-        )
-    }
 
     def applyEtlLoggerOptions(options: OptionSet, etlDbConnectionOptions: EtlDbConnectionOptions): EtlLoggerOptions = {
         val etlLogTable = options.valueOf(ETL_LOG_TABLE).asInstanceOf[String]
@@ -91,9 +77,7 @@ object MigratorOptions {
         accepts(APPLICATION_NAME).withRequiredArg()
         accepts(SCHEDULER_MODE).withOptionalArg().defaultsTo(DEFAULT_SCHEDULER_MODE)
         accepts(ETL_LOG_TABLE).withRequiredArg()
-        accepts(DB_CONFIG_TABLE_NAME).withRequiredArg()
         accepts(TABLE_CONFIG_TABLE_NAME).withRequiredArg()
-        accepts(FIELD_CONFIG_TABLE_NAME).withRequiredArg()
     }
 
     def apply(args: Array[String]): MigratorOptions = {
@@ -104,7 +88,7 @@ object MigratorOptions {
         MigratorOptions(
             applyEtlLoggerOptions(options, etlDbConnectionOptions),
             applySparkOptions(options),
-            applyTableConfigOptions(options),
+            options.valueOf(TABLE_CONFIG_TABLE_NAME).asInstanceOf[String],
             options.valueOf(OUT_DATA_PATH).asInstanceOf[String],
             options.valueOf(HIVE_DB_NAME).asInstanceOf[String],
             LocalDateTime.now(),
