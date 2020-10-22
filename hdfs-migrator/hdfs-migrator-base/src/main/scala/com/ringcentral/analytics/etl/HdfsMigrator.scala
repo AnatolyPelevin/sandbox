@@ -13,14 +13,16 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.hive.conf.HiveConf
 import org.apache.hadoop.hive.ql.metadata.Hive
 import org.apache.spark.deploy.SparkHadoopUtil
-import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
+import org.slf4j.LoggerFactory
 
-object HdfsMigrator extends Logging {
+object HdfsMigrator {
+    private val LOG = LoggerFactory.getLogger(HdfsMigrator.getClass)
 
     def main(args: Array[String]): Unit = {
+
         implicit val options: MigratorOptions = MigratorOptions(args)
-        logInfo(options.toString)
+        (options.toString)
 
         val sparkOptions = options.sparkOptions
         implicit val spark: SparkSession = SparkSession.builder
@@ -42,9 +44,9 @@ object HdfsMigrator extends Logging {
         val tables = configReader.getTableConfigs
 
         val tableNames: String = tables.map(_.hiveTableName).mkString(",")
-        logInfo(s"Will migrate tables $tableNames")
+        LOG.info(s"Will migrate tables $tableNames")
 
-        val factory = new MigratorJobFactory()
+        val factory = new MigratorJobFactory
 
         val threadPool = Executors.newFixedThreadPool(options.jobsThreadsCount)
         val futures = tables

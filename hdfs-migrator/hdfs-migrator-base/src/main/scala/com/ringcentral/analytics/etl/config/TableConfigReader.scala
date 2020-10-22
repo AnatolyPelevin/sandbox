@@ -1,6 +1,5 @@
 package com.ringcentral.analytics.etl.config
 
-import com.ringcentral.analytics.etl.config.model.TableDefinition
 import scalikejdbc.DBSession
 import scalikejdbc.NoExtractor
 import scalikejdbc.SQL
@@ -31,6 +30,7 @@ class TableConfigReader(options: EtlDbConnectionOptions, tablesConfigTableName: 
                |              FROM $configTable GROUP BY HIVE_TABLE_NAME) AS TCG
                |        ON (TC.HIVE_TABLE_NAME = TCG.HIVE_TABLE_NAME AND TC.CONFIG_VERSION = TCG.MAX_CONFIG_VERSION)
                |     WHERE TC.ENABLED=TRUE
-               |  ORDER BY @TC.PRIORITY""".stripMargin
+               |  ORDER BY @TC.PRIORITY"""
+            .stripMargin
     }
 }

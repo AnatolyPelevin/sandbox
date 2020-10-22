@@ -1,6 +1,5 @@
 package com.ringcentral.analytics.etl.config
 
-import com.ringcentral.analytics.etl.config.model.TableDefinition
 import scalikejdbc.ConnectionPool
 import scalikejdbc.NamedAutoSession
 import scalikejdbc.NamedDB
@@ -18,9 +17,8 @@ class ConfigReader(options: EtlDbConnectionOptions, tableName: String) {
 
 
     private def readActiveTableConfigs: Seq[TableDefinition] = {
-        NamedDB("CONFIG_DB") readOnly { implicit session => {
+        NamedDB("CONFIG_DB") readOnly { implicit session =>
             new TableConfigReader(options, tableName).readActiveTableConfigs
-        }
         }
     }
 }
