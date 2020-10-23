@@ -11,7 +11,7 @@ LOG_FILE_NAME="$(date +"%F-%T")_clp_hdg_migration.log"
 
 declare -a TABLES
 
-TABLES=('sipagent')
+TABLES=('clog')
 
 for i in "${TABLES[@]}"
 do
