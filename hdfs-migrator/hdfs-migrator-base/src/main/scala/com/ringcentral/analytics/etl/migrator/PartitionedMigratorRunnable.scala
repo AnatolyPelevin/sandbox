@@ -20,8 +20,8 @@ class PartitionedMigratorRunnable(tableConfig: TableDefinition)
                                   spark: SparkSession,
                                   hive: Hive,
                                   options: MigratorOptions,
-                                  fileSystem: FileSystemService
-                                 ) extends Runnable {
+                                  fileSystem: FileSystemService,
+                                  dateFilter: FilterByDate) extends Runnable {
     private val log = LoggerFactory.getLogger(classOf[LastSnapshotMigratorRunnable])
 
     def run(): Unit = {
@@ -56,10 +56,17 @@ class PartitionedMigratorRunnable(tableConfig: TableDefinition)
     }
 
     def migrate(location: String, tableName: String): Boolean = {
-        log.info(s"Start migration for $tableName partition with location $location")
         val jobType = tableConfig.hiveTableName.toUpperCase
 
         val date: LocalDate = LocalDate.parse(location.split("/").last.substring(3))
+
+        if (dateFilter.filter(date)) {
+            log.info(s"Migration for $tableName partition with location $location was skipped because partition date is not inside period")
+            return true
+        }
+
+        log.info(s"Start migration for $tableName partition with location $location")
+
         val dateTime = etlLogger.getJobStartTimeForDate(jobType, date).getOrElse(date.atStartOfDay())
 
         val tsPath = s"ts=${dateTime.toInstant(ZoneOffset.UTC).toEpochMilli}"

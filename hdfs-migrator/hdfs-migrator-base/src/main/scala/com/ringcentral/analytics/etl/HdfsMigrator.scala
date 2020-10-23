@@ -1,11 +1,13 @@
 package com.ringcentral.analytics.etl
 
+import java.time.format.DateTimeParseException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
 import com.ringcentral.analytics.etl.config.ConfigReader
 import com.ringcentral.analytics.etl.fs.FileSystemService
 import com.ringcentral.analytics.etl.logger.EtlLogger
+import com.ringcentral.analytics.etl.migrator.FilterByDate
 import com.ringcentral.analytics.etl.migrator.MigratorJobFactory
 import com.ringcentral.analytics.etl.options.EtlLoggerOptions
 import com.ringcentral.analytics.etl.options.MigratorOptions
@@ -22,13 +24,15 @@ object HdfsMigrator {
     def main(args: Array[String]): Unit = {
 
         implicit val options: MigratorOptions = MigratorOptions(args)
-        (options.toString)
+        LOG.info(options.toString)
 
         val sparkOptions = options.sparkOptions
         implicit val spark: SparkSession = SparkSession.builder
             .enableHiveSupport()
             .appName(options.applicationName)
             .config("spark.scheduler.mode", sparkOptions.schedulerMode)
+            .config("spark.executor.memory", sparkOptions.executorMemory)
+            .config("spark.driver.memory", sparkOptions.driverMemory)
             .getOrCreate()
 
         val hiveConf = new HiveConf(SparkHadoopUtil.get.conf, HdfsMigrator.getClass)
@@ -45,16 +49,22 @@ object HdfsMigrator {
 
         val tableNames: String = tables.map(_.hiveTableName).mkString(",")
         LOG.info(s"Will migrate tables $tableNames")
+        try {
+            implicit val filter: FilterByDate = FilterByDate(options.startDate, options.endDate)
 
-        val factory = new MigratorJobFactory
+            val factory = new MigratorJobFactory
 
-        val threadPool = Executors.newFixedThreadPool(options.jobsThreadsCount)
-        val futures = tables
-            .map(factory.createJob)
-            .map(job => CompletableFuture.runAsync(job, threadPool))
+            val threadPool = Executors.newFixedThreadPool(options.jobsThreadsCount)
+            val futures = tables
+                .map(factory.createJob)
+                .map(job => CompletableFuture.runAsync(job, threadPool))
 
-        CompletableFuture.allOf(futures: _*).join()
-        spark.stop()
-        threadPool.shutdownNow()
+            CompletableFuture.allOf(futures: _*).join()
+            spark.stop()
+            threadPool.shutdownNow()
+
+        } catch {
+            case _: DateTimeParseException => LOG.error("Illegal date-start or date-end argument")
+        }
     }
 }

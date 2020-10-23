@@ -1,8 +1,5 @@
 package com.ringcentral.analytics.etl.options
 
-import java.time.LocalDate
-import java.time.LocalDateTime
-
 import com.ringcentral.analytics.etl.config.EtlDbConnectionOptions
 import joptsimple.OptionParser
 import joptsimple.OptionSet
@@ -13,11 +10,10 @@ case class MigratorOptions(
                               tableConfigName: String = "",
                               outDataPath: String = "",
                               hiveDBName: String = "",
-                              dt: LocalDateTime,
                               applicationName: String = "",
-                              jobsThreadsCount: Int = 0) {
-    def getCurrentDate: LocalDate = dt.toLocalDate
-}
+                              jobsThreadsCount: Int = 0,
+                              startDate: String = "",
+                              endDate: String = "")
 
 object MigratorOptions {
 
@@ -36,6 +32,10 @@ object MigratorOptions {
     private val APPLICATION_NAME = "application-name"
     private val SCHEDULER_MODE = "scheduler-mode"
     private val ETL_LOG_TABLE = "etl-log-table"
+    private val DRIVER_MEMORY = "driver-memory"
+    private val EXECUTOR_MEMORY = "executor-memory"
+    private val START_DATE = "start-date"
+    private val END_DATE = "end-date"
 
     def applyEtlLoggerOptions(options: OptionSet, etlDbConnectionOptions: EtlDbConnectionOptions): EtlLoggerOptions = {
         val etlLogTable = options.valueOf(ETL_LOG_TABLE).asInstanceOf[String]
@@ -49,9 +49,9 @@ object MigratorOptions {
 
     def applySparkOptions(options: OptionSet): SparkOptions = {
         val schedulerMode = options.valueOf(SCHEDULER_MODE).asInstanceOf[String]
-        SparkOptions(
-            schedulerMode
-        )
+        val executorMemory = options.valueOf(EXECUTOR_MEMORY).asInstanceOf[String]
+        val driverMemory = options.valueOf(DRIVER_MEMORY).asInstanceOf[String]
+        SparkOptions(schedulerMode, executorMemory, driverMemory)
     }
 
     def applyEtlDbConnectionOptions(options: OptionSet): EtlDbConnectionOptions = {
@@ -59,11 +59,7 @@ object MigratorOptions {
         val etldbConnectionString = options.valueOf(ETLDB_CONNECTION_STRING).asInstanceOf[String]
         val etlDbUser = options.valueOf(ETLDB_USER).asInstanceOf[String]
         val etlDbPassword = options.valueOf(ETLDB_PASSWORD).asInstanceOf[String]
-        EtlDbConnectionOptions(
-            etldbConnectionString,
-            etlDbDatabase,
-            etlDbUser,
-            etlDbPassword)
+        EtlDbConnectionOptions(etldbConnectionString, etlDbDatabase, etlDbUser, etlDbPassword)
     }
 
     private val PARSER = new OptionParser {
@@ -78,6 +74,10 @@ object MigratorOptions {
         accepts(SCHEDULER_MODE).withOptionalArg().defaultsTo(DEFAULT_SCHEDULER_MODE)
         accepts(ETL_LOG_TABLE).withRequiredArg()
         accepts(TABLE_CONFIG_TABLE_NAME).withRequiredArg()
+        accepts(DRIVER_MEMORY).withOptionalArg().defaultsTo("1g")
+        accepts(EXECUTOR_MEMORY).withOptionalArg().defaultsTo("1g")
+        accepts(START_DATE).withOptionalArg().defaultsTo("")
+        accepts(END_DATE).withOptionalArg().defaultsTo("")
     }
 
     def apply(args: Array[String]): MigratorOptions = {
@@ -91,8 +91,9 @@ object MigratorOptions {
             options.valueOf(TABLE_CONFIG_TABLE_NAME).asInstanceOf[String],
             options.valueOf(OUT_DATA_PATH).asInstanceOf[String],
             options.valueOf(HIVE_DB_NAME).asInstanceOf[String],
-            LocalDateTime.now(),
             options.valueOf(APPLICATION_NAME).asInstanceOf[String],
-            options.valueOf(JOBS_THREADS_COUNT).asInstanceOf[Int])
+            options.valueOf(JOBS_THREADS_COUNT).asInstanceOf[Int],
+            options.valueOf(START_DATE).asInstanceOf[String],
+            options.valueOf(END_DATE).asInstanceOf[String])
     }
 }

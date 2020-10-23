@@ -11,7 +11,8 @@ class MigratorJobFactory(implicit etlLogger: EtlLogger,
                          spark: SparkSession,
                          hive: Hive,
                          options: MigratorOptions,
-                         fileSystem: FileSystemService) {
+                         fileSystem: FileSystemService,
+                         dateFilter: FilterByDate) {
 
     def createJob(tableDefinition: TableDefinition): Runnable = {
         if (tableDefinition.isPartitioned) {
