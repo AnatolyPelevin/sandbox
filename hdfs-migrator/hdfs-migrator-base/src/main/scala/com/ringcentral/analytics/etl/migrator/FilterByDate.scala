@@ -13,7 +13,7 @@ object FilterByDate {
 
     private def evalFilter(startDate: String, endDate: String): LocalDate => Boolean =
         (startDate, endDate) match {
-            case ("", "") => _ => true
+            case ("", "") => _ => false
             case ("", endParam) =>
                 val end = LocalDate.parse(endParam)
                 date => date.isBefore(end)
