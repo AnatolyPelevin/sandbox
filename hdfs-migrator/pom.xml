@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.ringcentral.analytics.etl</groupId>
+    <artifactId>hdfs-migrator</artifactId>
+    <name>Base project for HDFS migration</name>
+    <packaging>pom</packaging>
+    <version>1.0.0</version>
+
+    <parent>
+        <groupId>com.ringcentral.analytics</groupId>
+        <artifactId>parent-pom</artifactId>
+        <version>1.8.14</version>
+    </parent>
+
+    <modules>
+        <module>hdfs-migrator-base</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sf.jopt-simple</groupId>
+                <artifactId>jopt-simple</artifactId>
+                <version>5.0.4</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.scalikejdbc</groupId>
+                <artifactId>scalikejdbc_${spark.scala.binary.version}</artifactId>
+                <version>2.5.0</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>joda-time</groupId>
+                        <artifactId>joda-time</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.scala-lang</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.scala-lang.modules</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
