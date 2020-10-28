@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
 import com.ringcentral.analytics.etl.config.ConfigReader
+import com.ringcentral.analytics.etl.config.TableDefinition
 import com.ringcentral.analytics.etl.fs.FileSystemService
 import com.ringcentral.analytics.etl.logger.EtlLogger
 import com.ringcentral.analytics.etl.migrator.FilterByDate
@@ -48,6 +49,11 @@ object HdfsMigrator {
         val tables = configReader.getTableConfigs
 
         val tableNames: String = tables.map(_.hiveTableName).mkString(",")
+
+        if (!newSchemeUsed(hive, options, tables)) {
+            throw new RuntimeException("Please run migration after etl with new logic finished for first time")
+        }
+
         LOG.info(s"Will migrate tables $tableNames")
         try {
             implicit val filter: FilterByDate = FilterByDate(options.startDate, options.endDate)
@@ -66,5 +72,11 @@ object HdfsMigrator {
         } catch {
             case _: DateTimeParseException => LOG.error("Illegal date-start or date-end argument")
         }
+    }
+
+    private def newSchemeUsed(hive: Hive, options: MigratorOptions, tables: Seq[TableDefinition]): Boolean = {
+        tables.filter(t => !t.isPartitioned)
+            .map(t => hive.getTable(options.hiveDBName, t.hiveTableName).getDataLocation)
+            .forall(location => location.toString.split("/").last.startsWith("ts="))
     }
 }
