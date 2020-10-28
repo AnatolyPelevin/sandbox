@@ -74,7 +74,7 @@ object HdfsMigrator {
         }
     }
 
-    private def newSchemeUsed(hive: Hive, options: MigratorOptions, tables: Seq[TableDefinition]) = {
+    private def newSchemeUsed(hive: Hive, options: MigratorOptions, tables: Seq[TableDefinition]): Boolean = {
         tables.filter(t => !t.isPartitioned)
             .map(t => hive.getTable(options.hiveDBName, t.hiveTableName).getDataLocation)
             .forall(location => location.toString.split("/").last.startsWith("ts="))
