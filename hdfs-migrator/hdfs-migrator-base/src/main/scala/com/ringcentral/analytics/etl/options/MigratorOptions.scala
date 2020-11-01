@@ -13,7 +13,9 @@ case class MigratorOptions(
                               applicationName: String = "",
                               jobsThreadsCount: Int = 0,
                               startDate: String = "",
-                              endDate: String = "")
+                              endDate: String = "",
+                              isSfdcMigration: Boolean = false,
+                              formulaConfigTableName: String = "")
 
 object MigratorOptions {
 
@@ -36,6 +38,8 @@ object MigratorOptions {
     private val EXECUTOR_MEMORY = "executor-memory"
     private val START_DATE = "start-date"
     private val END_DATE = "end-date"
+    private val IS_SFDC_MIGRATION = "is-sfdc-migration"
+    private val FORMULA_CONFIG_TABLE_NAME = "formula-config-table-name"
 
     def applyEtlLoggerOptions(options: OptionSet, etlDbConnectionOptions: EtlDbConnectionOptions): EtlLoggerOptions = {
         val etlLogTable = options.valueOf(ETL_LOG_TABLE).asInstanceOf[String]
@@ -78,6 +82,8 @@ object MigratorOptions {
         accepts(EXECUTOR_MEMORY).withOptionalArg().defaultsTo("1g")
         accepts(START_DATE).withOptionalArg().defaultsTo("")
         accepts(END_DATE).withOptionalArg().defaultsTo("")
+        accepts(IS_SFDC_MIGRATION).withRequiredArg().ofType(classOf[Boolean]).defaultsTo(false)
+        accepts(FORMULA_CONFIG_TABLE_NAME).withOptionalArg().defaultsTo("")
     }
 
     def apply(args: Array[String]): MigratorOptions = {
@@ -94,6 +100,9 @@ object MigratorOptions {
             options.valueOf(APPLICATION_NAME).asInstanceOf[String],
             options.valueOf(JOBS_THREADS_COUNT).asInstanceOf[Int],
             options.valueOf(START_DATE).asInstanceOf[String],
-            options.valueOf(END_DATE).asInstanceOf[String])
+            options.valueOf(END_DATE).asInstanceOf[String],
+            options.valueOf(IS_SFDC_MIGRATION).asInstanceOf[Boolean],
+            options.valueOf(FORMULA_CONFIG_TABLE_NAME).asInstanceOf[String]
+        )
     }
 }
