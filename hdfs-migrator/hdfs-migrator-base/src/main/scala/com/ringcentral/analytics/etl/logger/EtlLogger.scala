@@ -11,7 +11,7 @@ import scalikejdbc.NamedDB
 import scalikejdbc.SQLSyntax
 import scalikejdbc.scalikejdbcSQLInterpolationImplicitDef
 
-class EtlLogger(options: EtlLoggerOptions) {
+class EtlLogger(options: EtlLoggerOptions, isSfdcMigration: Boolean) {
     ConnectionPool.add("ETL_DB",
         options.dbConnectionOptions.etlDbConnectionString,
         options.dbConnectionOptions.etlDbUser,
@@ -24,39 +24,29 @@ class EtlLogger(options: EtlLoggerOptions) {
         fullTableName
     }
 
-    def getLastJobStartTime(jobType: String): Option[LocalDateTime] = {
-        val query =
-            sql"""
-                   |   SELECT job_start_time
-                   |     FROM $getFullTableName
-                   |    WHERE job_type = $jobType
-                   |      AND status='FINISHED'
-                   | ORDER BY JOB_START_TIME DESC
-                   |    LIMIT 1 """
-                .stripMargin
-        log.info(s"executed query: ${query.statement}")
-        NamedDB("ETL_DB") readOnly { implicit session =>
-            query.map(_.timestamp("job_start_time"))
-                .single()
-                .apply()
-                .map(_.toLocalDateTime)
-        }
-    }
-
     def getJobStartTimeForDate(jobType: String, localDate: LocalDate): Option[LocalDateTime] = {
+        val jobTypeCondition = generateJobTypeCondition(jobType)
         val query =
-            sql"""
+             sql"""
                    |   SELECT job_start_time
                    |     FROM $getFullTableName
-                   |    WHERE job_type = $jobType
+                   |    WHERE $jobTypeCondition
                    |      AND status = 'FINISHED'
                    |      AND start_date::TIMESTAMP::date = $localDate
                    | ORDER BY JOB_START_TIME DESC
-                   |    LIMIT 1 """
-                .stripMargin
+                   |    LIMIT 1
+                """.stripMargin
         log.info(s"executed query: ${query.statement}")
         NamedDB("ETL_DB") readOnly { implicit session =>
             query.map(_.timestamp("job_start_time")).single().apply().map(_.toLocalDateTime)
+        }
+    }
+
+    private def generateJobTypeCondition(jobType: String): scalikejdbc.interpolation.SQLSyntax = {
+         if (isSfdcMigration) {
+            sqls"(UPPER(job_type)=UPPER($jobType) OR UPPER(job_type)=UPPER(${jobType + "_api"}))"
+        } else {
+            sqls"job_type = $jobType"
         }
     }
 }

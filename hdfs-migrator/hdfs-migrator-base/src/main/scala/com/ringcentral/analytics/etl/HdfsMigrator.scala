@@ -40,12 +40,12 @@ object HdfsMigrator {
         implicit val hive: Hive = Hive.get(hiveConf)
 
         val loggerOptions: EtlLoggerOptions = options.etlLoggerOptions.copy(jobId = spark.sparkContext.applicationId)
-        implicit val etlLogger: EtlLogger = new EtlLogger(loggerOptions)
+        implicit val etlLogger: EtlLogger = new EtlLogger(loggerOptions, options.isSfdcMigration)
 
         val fileSystem = FileSystem.get(spark.sparkContext.hadoopConfiguration)
         implicit val fileSystemService: FileSystemService = new FileSystemService(fileSystem)
 
-        val configReader = new ConfigReader(options.etlLoggerOptions.dbConnectionOptions, options.tableConfigName)
+        val configReader = new ConfigReader(options.etlLoggerOptions.dbConnectionOptions, options.tableConfigName, options.formulaConfigTableName)
         val tables = configReader.getTableConfigs
 
         val tableNames: String = tables.map(_.hiveTableName).mkString(",")

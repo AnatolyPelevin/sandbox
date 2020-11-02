@@ -4,7 +4,7 @@ import scalikejdbc.ConnectionPool
 import scalikejdbc.NamedAutoSession
 import scalikejdbc.NamedDB
 
-class ConfigReader(options: EtlDbConnectionOptions, tableName: String) {
+class ConfigReader(options: EtlDbConnectionOptions, tableName: String, formulaConfigTableName: String) {
     ConnectionPool.add("CONFIG_DB",
         options.etlDbConnectionString,
         options.etlDbUser,
@@ -18,7 +18,14 @@ class ConfigReader(options: EtlDbConnectionOptions, tableName: String) {
 
     private def readActiveTableConfigs: Seq[TableDefinition] = {
         NamedDB("CONFIG_DB") readOnly { implicit session =>
-            new TableConfigReader(options, tableName).readActiveTableConfigs
+            val tableConfigReader = new TableConfigReader(options, tableName, formulaConfigTableName)
+          val tableConfigs = tableConfigReader.readActiveTableConfigs
+          val formulaTableConfigs = if (!formulaConfigTableName.isEmpty){
+              tableConfigReader.readActiveFormulaTableConfigs
+          } else {
+              List.empty
+          }
+          tableConfigs ++ formulaTableConfigs
         }
     }
 }
