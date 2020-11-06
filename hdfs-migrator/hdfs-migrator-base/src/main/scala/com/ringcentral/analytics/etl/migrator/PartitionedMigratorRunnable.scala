@@ -8,6 +8,8 @@ import com.ringcentral.analytics.etl.config.TableDefinition
 import com.ringcentral.analytics.etl.fs.FileSystemService
 import com.ringcentral.analytics.etl.logger.EtlLogger
 import com.ringcentral.analytics.etl.options.MigratorOptions
+import com.ringcentral.analytics.etl.progress.MigrationStep
+import com.ringcentral.analytics.etl.progress.ProgressLogger
 import org.apache.hadoop.hive.ql.metadata.Hive
 import org.apache.hadoop.hive.ql.metadata.Partition
 import org.apache.spark.sql.SparkSession
@@ -21,7 +23,8 @@ class PartitionedMigratorRunnable(tableConfig: TableDefinition)
                                   hive: Hive,
                                   options: MigratorOptions,
                                   fileSystem: FileSystemService,
-                                  dateFilter: FilterByDate) extends Runnable {
+                                  dateFilter: FilterByDate,
+                                  progressLogger: ProgressLogger) extends Runnable {
     private val log = LoggerFactory.getLogger(classOf[LastSnapshotMigratorRunnable])
 
     def run(): Unit = {
@@ -47,7 +50,8 @@ class PartitionedMigratorRunnable(tableConfig: TableDefinition)
         }
 
         val success = existingPartitionLocations.filter(!isMigratedPartition(_))
-            .forall(location => migrate(location, tableName))
+            .map(location => migrate(location, tableName))
+            .forall(identity)
         if (success) {
             log.info(s"Migration for table $tableName finished successfully")
         } else {
@@ -76,9 +80,13 @@ class PartitionedMigratorRunnable(tableConfig: TableDefinition)
             return false
         }
 
-        executeSqlWithLogging(alterPartitionTableLocationSql(tableName, date, tsPath))
+        val result = executeSqlWithLogging(alterPartitionTableLocationSql(tableName, date, tsPath))
+        if (result) {
+            val step = MigrationStep(tableName, location, tsPath)
+            progressLogger.log(step)
+        }
+        result
     }
-
 
     private def isMigrationComplete(locations: Array[String]) = {
         locations.length == locations.count(isMigratedPartition)
