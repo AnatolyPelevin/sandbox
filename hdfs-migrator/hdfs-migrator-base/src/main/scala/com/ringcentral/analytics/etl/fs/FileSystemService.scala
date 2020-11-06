@@ -6,10 +6,9 @@ import org.slf4j.LoggerFactory
 
 class FileSystemService(fileSystem: FileSystem) {
 
-    val log = LoggerFactory.getLogger(classOf[FileSystemService])
+    private val log = LoggerFactory.getLogger(classOf[FileSystemService])
 
     def moveFolder(tableName: String, originalPath: String, tsPath: String): Boolean = {
-
 
         val src = new Path(originalPath)
         val tmp = new Path(s"${originalPath}_tmp")
@@ -30,6 +29,26 @@ class FileSystemService(fileSystem: FileSystem) {
         true
     }
 
+    def moveFolderBack(tableName: String, originalPath: String, tsPath: String): Boolean = {
+        val src = new Path(s"$originalPath/$tsPath")
+        val tmp = new Path(s"${originalPath}_tmp")
+        val dst = new Path(originalPath)
+        log.info(s"Start moving data for $tableName from $src to $dst")
+        val renameToTmpStatus = fileSystem.rename(src, tmp)
+        if (!renameToTmpStatus) {
+            log.error(s"Copy data for $tableName from ${src.toString} to ${tmp.toString} was not successful")
+            return false
+        }
+        fileSystem.delete(dst, true)
+        val finalRenameStatus = fileSystem.rename(tmp, dst)
+        if (!finalRenameStatus) {
+            log.error(s"Copy data for $tableName from ${tmp.toString} to ${dst.toString} was not successful")
+            return false
+        }
+        true
+    }
+
+
     def clearExcluding(folder: Path, exclusion: Path): Boolean = {
         val subfolders = fileSystem.listStatus(folder).map(_.getPath)
 
@@ -40,7 +59,8 @@ class FileSystemService(fileSystem: FileSystem) {
 
         subfolders.filter(path => path != exclusion)
             .filter(isNotTsSubfolder)
-            .forall(deleteFolder)
+            .map(deleteFolder)
+            .forall(identity)
     }
 
     private def isNotTsSubfolder(location: Path) = {
